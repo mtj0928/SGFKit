@@ -18,9 +18,9 @@ public struct SGFPropertyEntry<Game: SGFGame, Object: Sendable & Hashable>: Hash
 
 enum SGFGeneralProperties<Game: SGFGame> {
 
-    public typealias Entry<O: Hashable & Sendable> = SGFPropertyEntry<Game, O>
-    public typealias List<O: Hashable & Sendable> = SGFValueTypeCollection<Game>.SGFValueListType<O>
-    public typealias EList<O: Hashable & Sendable> = SGFValueTypeCollection<Game>.SGFValueEListType<O>
+    public typealias Entry<Object: Hashable & Sendable> = SGFPropertyEntry<Game, Object>
+    public typealias List<Object: Hashable & Sendable> = SGFValueTypeCollection<Game>.SGFValueListType<Object>
+    public typealias EList<Object: Hashable & Sendable> = SGFValueTypeCollection<Game>.SGFValueEListType<Object>
     public typealias Compose<ObjectA: Hashable & Sendable, ObjectB: Hashable & Sendable> = SGFValueTypeCollection<Game>.SGFValueComposedType<ObjectA, ObjectB>
     public typealias Union<ObjectA: Hashable & Sendable, ObjectB: Hashable & Sendable> = SGFValueTypeCollection<Game>.SGFValueUnionType<ObjectA, ObjectB>
 

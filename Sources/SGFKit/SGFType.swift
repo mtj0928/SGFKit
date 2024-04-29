@@ -246,4 +246,3 @@ public enum SGFValueTypeCollection<Game: SGFGame> {
         static var stone: SGFValuePrimitiveType<Game.Stone> { .init(type: .stone) }
     }
 }
-
