@@ -7,7 +7,7 @@ public protocol SGFPropertyEntryProtocol<Game>: Hashable & Sendable {
 
 public struct SGFPropertyEntry<Game: SGFGame, Object: Sendable & Hashable>: Hashable & Sendable, SGFPropertyEntryProtocol {
     public let name: String
-    public let type: SGFValueRootTypeInformation<Game, Object>
+    public let type: SGFTypeInformation<Game, Object>
 
     public var rootType: SGFType<Game> {
         type.type
@@ -19,10 +19,10 @@ public struct SGFPropertyEntry<Game: SGFGame, Object: Sendable & Hashable>: Hash
 enum SGFGeneralProperties<Game: SGFGame> {
 
     public typealias Entry<Object: Hashable & Sendable> = SGFPropertyEntry<Game, Object>
-    public typealias List<Object: Hashable & Sendable> = SGFValueTypeCollection<Game>.SGFValueListType<Object>
-    public typealias EList<Object: Hashable & Sendable> = SGFValueTypeCollection<Game>.SGFValueEListType<Object>
-    public typealias Compose<ObjectA: Hashable & Sendable, ObjectB: Hashable & Sendable> = SGFValueTypeCollection<Game>.SGFValueComposedType<ObjectA, ObjectB>
-    public typealias Union<ObjectA: Hashable & Sendable, ObjectB: Hashable & Sendable> = SGFValueTypeCollection<Game>.SGFValueUnionType<ObjectA, ObjectB>
+    public typealias List<Object: Hashable & Sendable> = SGFTypes<Game>.ListType<Object>
+    public typealias EList<Object: Hashable & Sendable> = SGFTypes<Game>.EListType<Object>
+    public typealias Compose<ObjectA: Hashable & Sendable, ObjectB: Hashable & Sendable> = SGFTypes<Game>.ComposeType<ObjectA, ObjectB>
+    public typealias Union<ObjectA: Hashable & Sendable, ObjectB: Hashable & Sendable> = SGFTypes<Game>.UnionType<ObjectA, ObjectB>
 
     // MARK: - Move
     static var black: Entry<Game.Move> { .init(name: "B", type: .move) }

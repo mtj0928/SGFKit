@@ -72,7 +72,7 @@ public final class Parser<Game: SGFGame> {
         let expectedType = property?.rootType
         index += 1
 
-        func extractSequence(for sequence: SGFValueTypeCollection<Game>.SGFValueSequence?) throws -> Nodes.Property {
+        func extractSequence(for sequence: SGFTypes<Game>.Sequence?) throws -> Nodes.Property {
             switch sequence {
             case .single(let compose):
                 let value = try propertyValue(expectedType: compose)
@@ -131,7 +131,7 @@ public final class Parser<Game: SGFGame> {
         return (Nodes.PropIdent(letters: letters), property)
     }
 
-    private func propertyValue(expectedType: SGFValueTypeCollection<Game>.SGFCompose?) throws -> Nodes.PropValue {
+    private func propertyValue(expectedType: SGFTypes<Game>.Compose?) throws -> Nodes.PropValue {
         try precondition(expected: .leftBracket)
         index += 1
         let value = try cValeType(expectedType: expectedType)
@@ -140,7 +140,7 @@ public final class Parser<Game: SGFGame> {
         return Nodes.PropValue(type: value)
     }
 
-    private func cValeType(expectedType: SGFValueTypeCollection<Game>.SGFCompose?) throws -> Nodes.CValueType {
+    private func cValeType(expectedType: SGFTypes<Game>.Compose?) throws -> Nodes.CValueType {
         switch expectedType {
         case .single(let expectedType):
             return .single(try value(expectedType: expectedType))
@@ -155,7 +155,7 @@ public final class Parser<Game: SGFGame> {
         }
     }
 
-    private func value(expectedType: SGFValueTypeCollection<Game>.SGFValuePrimitiveValue?) throws -> Nodes.ValueType {
+    private func value(expectedType: SGFTypes<Game>.Primitive?) throws -> Nodes.ValueType {
         switch expectedType {
         case .some(.none): return .none
         case .number:
@@ -306,5 +306,5 @@ extension Parser {
 
 public enum ParserError<Game: SGFGame>: Error {
     case unexpectedToken(expectedToken: TokenKind.Case, at: String.Index)
-    case typeMismatch(expectedType: SGFValueTypeCollection<Game>.SGFValuePrimitiveValue, at: String.Index)
+    case typeMismatch(expectedType: SGFTypes<Game>.Primitive, at: String.Index)
 }
