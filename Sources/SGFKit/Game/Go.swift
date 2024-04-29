@@ -46,30 +46,35 @@ public struct GoPoint: SGFPoint, SGFStone, SGFMove, Hashable, Sendable {
 public struct GoPropertyTable: SGFPropertyTable {
     public typealias Game = Go
 
-    public let table: [String: SGFPropertyEntry<Go>]
+    public let table: [String: any SGFPropertyEntryProtocol<Go>]
 
     public init() {
-        var table: [String: SGFPropertyEntry<Go>] = [:]
-        for entry in SGFPropertyEntry<Go>.generalEntries + Go.goSpecificProperties {
+        var table: [String: any SGFPropertyEntryProtocol<Go>] = [:]
+        for entry in SGFGeneralProperties<Go>.generalEntries + Go.goSpecificProperties {
             table[entry.name] = entry
         }
         self.table = table
     }
 
-    public func property(identifier: String) throws -> SGFPropertyEntry<Go>? {
+    public func property(identifier: String) throws -> (any SGFPropertyEntryProtocol<Go>)? {
         table[identifier]
     }
 }
 
 extension Go {
-    static let goSpecificProperties: [SGFPropertyEntry] = [.handicap, .komi, .territoryOfBlock, .territoryOfWhite]
+    static let goSpecificProperties: [any SGFPropertyEntryProtocol<Go>] = [
+        SGFGeneralProperties<Go>.handicap,
+        SGFGeneralProperties<Go>.komi,
+        SGFGeneralProperties<Go>.territoryOfBlock,
+        SGFGeneralProperties<Go>.territoryOfWhite
+    ]
 }
 
-extension SGFPropertyEntry<Go> {
-    static let handicap = SGFPropertyEntry(name: "HA", type: .number)
-    static let komi = SGFPropertyEntry(name: "KM", type: .real)
-    static let territoryOfBlock = SGFPropertyEntry(name: "TB", type: .elist(of: .point))
-    static let territoryOfWhite = SGFPropertyEntry(name: "TW", type: .elist(of: .point))
+extension SGFGeneralProperties<Go> {
+    static var handicap: Entry<Int> { Entry<Int>(name: "HA", type: .number) }
+    static var komi: Entry<Double> { Entry<Double>(name: "KM", type: .real) }
+    static var territoryOfBlock: Entry<EList<Go.Point>> { Entry<EList<Go.Point>>(name: "TB", type: .elist(of: .point)) }
+    static var territoryOfWhite: Entry<EList<Go.Point>> { Entry<EList<Go.Point>>(name: "TW", type: .elist(of: .point)) }
 }
 
 public typealias GoParser = Parser<Go>

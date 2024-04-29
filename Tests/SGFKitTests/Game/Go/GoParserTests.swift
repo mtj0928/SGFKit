@@ -11,6 +11,7 @@ final class GoParserTests: XCTestCase {
         let firstProperty = collection.gameTrees.first?.sequence.nodes.first?.properties.first
         XCTAssertEqual(firstProperty?.identifier.letters, "FF")
         XCTAssertEqual(firstProperty?.values.first?.type, .single(.number(4)))
+        let properties = collection.gameTrees[0].sequence.nodes[0]
     }
 }
 

@@ -1,191 +1,169 @@
-public struct SGFPropertyEntry<Game: SGFGame> {
+public protocol SGFPropertyEntryProtocol<Game>: Hashable & Sendable {
+    var name: String { get }
+    associatedtype Game: SGFGame
+
+    var rootType: SGFType<Game> { get }
+}
+
+public struct SGFPropertyEntry<Game: SGFGame, Object: Sendable & Hashable>: Hashable & Sendable, SGFPropertyEntryProtocol {
     public let name: String
-    public let type: PropertyType
-}
+    public let type: SGFValueRootTypeInformation<Game, Object>
 
-extension SGFPropertyEntry {
-    public struct PropertyType {
-        let type: SGFValueUnionType
-        let listType: PropertyListType
+    public var rootType: SGFType<Game> {
+        type.type
     }
-
-    public enum PropertyListType {
-        case single, list, elist
-    }
-}
-
-extension SGFPropertyEntry.PropertyType {
-    public static func single(_ type: SGFValueUnionType) -> SGFPropertyEntry.PropertyType {
-        .init(type: type, listType: .single)
-    }
-
-    public static func union(_ first: SGFValueComposedType, or second: SGFValueComposedType) -> SGFPropertyEntry.PropertyType {
-        .init(type: .union(first, second), listType: .single)
-    }
-
-    public static func list(of type: SGFValueUnionType) -> SGFPropertyEntry.PropertyType {
-        .init(type: type, listType: .list)
-    }
-
-    public static func elist(of type: SGFValueUnionType) -> SGFPropertyEntry.PropertyType {
-        .init(type: type, listType: .elist)
-    }    
-
-    public static var none: SGFPropertyEntry.PropertyType { .single(.none) }
-    public static var number: SGFPropertyEntry.PropertyType { .single(.number) }
-    public static var real: SGFPropertyEntry.PropertyType { .single(.real) }
-    public static var double: SGFPropertyEntry.PropertyType { .single(.double) }
-    public static var color: SGFPropertyEntry.PropertyType { .single(.color) }
-    public static var simpleText: SGFPropertyEntry.PropertyType { .single(.simpleText) }
-    public static var text: SGFPropertyEntry.PropertyType { .single(.text) }
-    public static var point: SGFPropertyEntry.PropertyType { .single(.point) }
-    public static var move: SGFPropertyEntry.PropertyType { .single(.move) }
-    public static var stone: SGFPropertyEntry.PropertyType { .single(.stone) }
 }
 
 // MARK: - Predefined Properties
 
-extension SGFPropertyEntry {
+enum SGFGeneralProperties<Game: SGFGame> {
+
+    public typealias Entry<O: Hashable & Sendable> = SGFPropertyEntry<Game, O>
+    public typealias List<O: Hashable & Sendable> = SGFValueTypeCollection<Game>.SGFValueListType<O>
+    public typealias EList<O: Hashable & Sendable> = SGFValueTypeCollection<Game>.SGFValueEListType<O>
+    public typealias Compose<ObjectA: Hashable & Sendable, ObjectB: Hashable & Sendable> = SGFValueTypeCollection<Game>.SGFValueComposedType<ObjectA, ObjectB>
+    public typealias Union<ObjectA: Hashable & Sendable, ObjectB: Hashable & Sendable> = SGFValueTypeCollection<Game>.SGFValueUnionType<ObjectA, ObjectB>
+
     // MARK: - Move
-    static var black: Self { SGFPropertyEntry(name: "B", type: .move) }
-    static var blackTimeLeft: Self { SGFPropertyEntry(name: "BL", type: .real) }
-    static var badMove: Self { SGFPropertyEntry(name: "BM", type: .double) }
-    static var doubtful: Self { SGFPropertyEntry(name: "DO", type: .none) }
-    static var interesting: Self { SGFPropertyEntry(name: "IT", type: .none) }
-    static var ko: Self { SGFPropertyEntry(name: "KO", type: .none) }
-    static var moveNumber: Self { SGFPropertyEntry(name: "MN", type: .number) }
-    static var otStoneBlack: Self { SGFPropertyEntry(name: "OB", type: .number) }
-    static var otStoneWhite: Self { SGFPropertyEntry(name: "OW", type: .number) }
-    static var tesuji: Self { SGFPropertyEntry(name: "TE", type: .double) }
-    static var white: Self { SGFPropertyEntry(name: "W", type: .move) }
-    static var whirteTimeLeft: Self { SGFPropertyEntry(name: "WL", type: .real) }
+    static var black: Entry<Game.Move> { .init(name: "B", type: .move) }
+    static var blackTimeLeft: Entry<Double> { .init(name: "BL", type: .real) }
+    static var badMove: Entry<SGFDouble> { .init(name: "BM", type: .double) }
+    static var doubtful: Entry<Never> { .init(name: "DO", type: .none) }
+    static var interesting: Entry<Never> { .init(name: "IT", type: .none) }
+    static var ko: Entry<Never> { .init(name: "KO", type: .none) }
+    static var moveNumber: Entry<Int> { .init(name: "MN", type: .number) }
+    static var otStoneBlack: Entry<Int> { .init(name: "OB", type: .number) }
+    static var otStoneWhite: Entry<Int> { .init(name: "OW", type: .number) }
+    static var tesuji: Entry<SGFDouble> { .init(name: "TE", type: .double) }
+    static var white: Entry<Game.Move> { .init(name: "W", type: .move) }
+    static var whirteTimeLeft: Entry<Double> { .init(name: "WL", type: .real) }
 
     // MARK: - Setup
-    static var addBlack: Self { SGFPropertyEntry(name: "AB", type: .list(of: .stone)) }
-    static var addEmpty: Self { SGFPropertyEntry(name: "AE", type: .list(of: .point)) }
-    static var addWhite: Self { SGFPropertyEntry(name: "AW", type: .list(of: .stone)) }
-    static var playerToPlay: Self { SGFPropertyEntry(name: "PL", type: .color) }
+    static var addBlack: Entry<List<Game.Stone>> { .init(name: "AB", type: .list(of: .stone)) }
+    static var addEmpty: Entry<List<Game.Point>> { .init(name: "AE", type: .list(of: .point)) }
+    static var addWhite: Entry<List<Game.Stone>> { .init(name: "AW", type: .list(of: .stone)) }
+    static var playerToPlay: Entry<SGFColor> { .init(name: "PL", type: .color) }
 
     // MARK: - None
-    static var arrow: Self { SGFPropertyEntry(name: "AR", type: .list(of: .compose(.point, .point))) }
-    static var comment: Self { SGFPropertyEntry(name: "C", type: .text) }
-    static var circle: Self { SGFPropertyEntry(name: "CR", type: .list(of: .point)) }
-    static var dimPoints: Self { SGFPropertyEntry(name: "DD", type: .elist(of: .point)) }
-    static var evenPosition: Self { SGFPropertyEntry(name: "DM", type: .double) }
-    static var figure: Self { SGFPropertyEntry(name: "FG", type: .union(.none, or: .compose(.number, .simpleText))) }
-    static var goodForBlack: Self { SGFPropertyEntry(name: "GB", type: .double) }
-    static var goodForWhite: Self { SGFPropertyEntry(name: "GW", type: .double) }
-    static var hotspot: Self { SGFPropertyEntry(name: "HO", type: .double) }
-    static var label: Self { SGFPropertyEntry(name: "LB", type: .list(of: .compose(.point, .simpleText))) }
-    static var line: Self { SGFPropertyEntry(name: "LN", type: .list(of: .compose(.point, .point))) }
-    static var mark: Self { SGFPropertyEntry(name: "MA", type: .list(of: .point)) }
-    static var nodeName: Self { SGFPropertyEntry(name: "N", type: .simpleText) }
-    static var printMoveMode: Self { SGFPropertyEntry(name: "PM", type: .number) }
-    static var selected: Self { SGFPropertyEntry(name: "SL", type: .list(of: .point)) }
-    static var square: Self { SGFPropertyEntry(name: "SQ", type: .list(of: .point)) }
-    static var triangle: Self { SGFPropertyEntry(name: "TR", type: .list(of: .point)) }
-    static var unclearPos: Self { SGFPropertyEntry(name: "UC", type: .double) }
-    static var value: Self { SGFPropertyEntry(name: "V", type: .real) }
-    static var view: Self { SGFPropertyEntry(name: "VW", type: .elist(of: .point)) }
+    static var arrow: Entry<List<Compose<Game.Point, Game.Point>>> { .init(name: "AR", type: .list(of: .compose(.point, .point))) }
+    static var comment: Entry<String> { .init(name: "C", type: .text) }
+    static var circle: Entry<List<Game.Point>> { .init(name: "CR", type: .list(of: .point)) }
+    static var dimPoints: Entry<EList<Game.Point>> { .init(name: "DD", type: .elist(of: .point)) }
+    static var evenPosition: Entry<SGFDouble> { .init(name: "DM", type: .double) }
+    static var figure: Entry<Union<Never, Compose<Int, String>>> { .init(name: "FG", type: .union(.none, or: .compose(.number, .simpleText))) }
+    static var goodForBlack: Entry<SGFDouble> { .init(name: "GB", type: .double) }
+    static var goodForWhite: Entry<SGFDouble> { .init(name: "GW", type: .double) }
+    static var hotspot: Entry<SGFDouble> { .init(name: "HO", type: .double) }
+    static var label: Entry<List<Compose<Game.Point, String>>> { .init(name: "LB", type: .list(of: .compose(.point, .simpleText))) }
+    static var line: Entry<List<Compose<Game.Point, Game.Point>>> { .init(name: "LN", type: .list(of: .compose(.point, .point))) }
+    static var mark: Entry<List<Game.Point>> { .init(name: "MA", type: .list(of: .point)) }
+    static var nodeName: Entry<String> { .init(name: "N", type: .simpleText) }
+    static var printMoveMode: Entry<Int> { .init(name: "PM", type: .number) }
+    static var selected: Entry<List<Game.Point>> { .init(name: "SL", type: .list(of: .point)) }
+    static var square: Entry<List<Game.Point>> { .init(name: "SQ", type: .list(of: .point)) }
+    static var triangle: Entry<List<Game.Point>> { .init(name: "TR", type: .list(of: .point)) }
+    static var unclearPos: Entry<SGFDouble> { .init(name: "UC", type: .double) }
+    static var value: Entry<Double> { .init(name: "V", type: .real) }
+    static var view: Entry<EList<Game.Point>> { .init(name: "VW", type: .elist(of: .point)) }
 
     // MARK: - Root
-    static var application: Self { SGFPropertyEntry(name: "AP", type: .single(.compose(.simpleText, .number))) }
-    static var charset: Self { SGFPropertyEntry(name: "CA", type: .simpleText) }
-    static var fileformat: Self { SGFPropertyEntry(name: "FF", type: .number) }
-    static var game: Self { SGFPropertyEntry(name: "GM", type: .number) }
-    static var style: Self { SGFPropertyEntry(name: "ST", type: .number) }
-    static var size: Self { SGFPropertyEntry(name: "SZ", type: .union(.number, or: .compose(.number, .number))) }
+    static var application: Entry<Compose<String, Int>> { .init(name: "AP", type: .compose(.simpleText, .number)) }
+    static var charset: Entry<String> { .init(name: "CA", type: .simpleText) }
+    static var fileformat: Entry<Int> { .init(name: "FF", type: .number) }
+    static var game: Entry<Int> { .init(name: "GM", type: .number) }
+    static var style: Entry<Int> { .init(name: "ST", type: .number) }
+    static var size: Entry<Union<Int, Compose<Int, Int>>> { .init(name: "SZ", type: .union(.number, or: .compose(.number, .number))) }
 
     // MARK: - Game Info
-    static var annotation: Self { SGFPropertyEntry(name: "AN", type: .simpleText) }
-    static var blackRank: Self { SGFPropertyEntry(name: "BR", type: .simpleText) }
-    static var blackTeam: Self { SGFPropertyEntry(name: "BT", type: .simpleText) }
-    static var copyright: Self { SGFPropertyEntry(name: "CP", type: .simpleText) }
-    static var date: Self { SGFPropertyEntry(name: "DT", type: .simpleText) }
-    static var event: Self { SGFPropertyEntry(name: "EV", type: .simpleText) }
-    static var gameComment: Self { SGFPropertyEntry(name: "GC", type: .text) }
-    static var gameName: Self { SGFPropertyEntry(name: "GN", type: .simpleText) }
-    static var opening: Self { SGFPropertyEntry(name: "ON", type: .simpleText) }
-    static var overtime: Self { SGFPropertyEntry(name: "OT", type: .simpleText) }
-    static var playerBlack: Self { SGFPropertyEntry(name: "PB", type: .simpleText) }
-    static var place: Self { SGFPropertyEntry(name: "PC", type: .simpleText) }
-    static var playerWhite: Self { SGFPropertyEntry(name: "PW", type: .simpleText) }
-    static var result: Self { SGFPropertyEntry(name: "RE", type: .simpleText) }
-    static var round: Self { SGFPropertyEntry(name: "RO", type: .simpleText) }
-    static var rules: Self { SGFPropertyEntry(name: "RU", type: .simpleText) }
-    static var source: Self { SGFPropertyEntry(name: "SO", type: .simpleText) }
-    static var timeLimit: Self { SGFPropertyEntry(name: "TM", type: .real) }
-    static var user: Self { SGFPropertyEntry(name: "US", type: .simpleText) }
-    static var whiteRank: Self { SGFPropertyEntry(name: "WR", type: .simpleText) }
-    static var whiteTeam: Self { SGFPropertyEntry(name: "WT", type: .simpleText) }
+    static var annotation: Entry<String> { .init(name: "AN", type: .simpleText) }
+    static var blackRank: Entry<String> { .init(name: "BR", type: .simpleText) }
+    static var blackTeam: Entry<String> { .init(name: "BT", type: .simpleText) }
+    static var copyright: Entry<String> { .init(name: "CP", type: .simpleText) }
+    static var date: Entry<String> { .init(name: "DT", type: .simpleText) }
+    static var event: Entry<String> { .init(name: "EV", type: .simpleText) }
+    static var gameComment: Entry<String> { .init(name: "GC", type: .text) }
+    static var gameName: Entry<String> { .init(name: "GN", type: .simpleText) }
+    static var opening: Entry<String> { .init(name: "ON", type: .simpleText) }
+    static var overtime: Entry<String> { .init(name: "OT", type: .simpleText) }
+    static var playerBlack: Entry<String> { .init(name: "PB", type: .simpleText) }
+    static var place: Entry<String> { .init(name: "PC", type: .simpleText) }
+    static var playerWhite: Entry<String> { .init(name: "PW", type: .simpleText) }
+    static var result: Entry<String> { .init(name: "RE", type: .simpleText) }
+    static var round: Entry<String> { .init(name: "RO", type: .simpleText) }
+    static var rules: Entry<String> { .init(name: "RU", type: .simpleText) }
+    static var source: Entry<String> { .init(name: "SO", type: .simpleText) }
+    static var timeLimit: Entry<Double> { .init(name: "TM", type: .real) }
+    static var user: Entry<String> { .init(name: "US", type: .simpleText) }
+    static var whiteRank: Entry<String> { .init(name: "WR", type: .simpleText) }
+    static var whiteTeam: Entry<String> { .init(name: "WT", type: .simpleText) }
 }
 
-extension SGFPropertyEntry {
-    static var generalEntries: [Self] {
+extension SGFGeneralProperties {
+    static var generalEntries: [any SGFPropertyEntryProtocol<Game>] {
         [
-            .black,
-            .blackTimeLeft,
-            .badMove,
-            .doubtful,
-            .interesting,
-            .ko,
-            .moveNumber,
-            .otStoneBlack,
-            .otStoneWhite,
-            .tesuji,
-            .white,
-            .whirteTimeLeft,
-            .addBlack,
-            .addEmpty,
-            .addWhite,
-            .playerToPlay,
-            .arrow,
-            .comment,
-            .circle,
-            .dimPoints,
-            .evenPosition,
-            .figure,
-            .goodForBlack,
-            .goodForWhite,
-            .hotspot,
-            .label,
-            .line,
-            .mark,
-            .nodeName,
-            .printMoveMode,
-            .selected,
-            .square,
-            .triangle,
-            .unclearPos,
-            .value,
-            .view,
-            .application,
-            .charset,
-            .fileformat,
-            .game,
-            .style,
-            .size,
-            .annotation,
-            .blackRank,
-            .blackTeam,
-            .copyright,
-            .date,
-            .event,
-            .gameComment,
-            .gameName,
-            .opening,
-            .overtime,
-            .playerBlack,
-            .place,
-            .playerWhite,
-            .result,
-            .round,
-            .rules,
-            .source,
-            .timeLimit,
-            .user,
-            .whiteRank,
-            .whiteTeam,
+            SGFGeneralProperties<Game>.black,
+            SGFGeneralProperties<Game>.blackTimeLeft,
+            SGFGeneralProperties<Game>.badMove,
+            SGFGeneralProperties<Game>.doubtful,
+            SGFGeneralProperties<Game>.interesting,
+            SGFGeneralProperties<Game>.ko,
+            SGFGeneralProperties<Game>.moveNumber,
+            SGFGeneralProperties<Game>.otStoneBlack,
+            SGFGeneralProperties<Game>.otStoneWhite,
+            SGFGeneralProperties<Game>.tesuji,
+            SGFGeneralProperties<Game>.white,
+            SGFGeneralProperties<Game>.whirteTimeLeft,
+            SGFGeneralProperties<Game>.addBlack,
+            SGFGeneralProperties<Game>.addEmpty,
+            SGFGeneralProperties<Game>.addWhite,
+            SGFGeneralProperties<Game>.playerToPlay,
+            SGFGeneralProperties<Game>.arrow,
+            SGFGeneralProperties<Game>.comment,
+            SGFGeneralProperties<Game>.circle,
+            SGFGeneralProperties<Game>.dimPoints,
+            SGFGeneralProperties<Game>.evenPosition,
+            SGFGeneralProperties<Game>.figure,
+            SGFGeneralProperties<Game>.goodForBlack,
+            SGFGeneralProperties<Game>.goodForWhite,
+            SGFGeneralProperties<Game>.hotspot,
+            SGFGeneralProperties<Game>.label,
+            SGFGeneralProperties<Game>.line,
+            SGFGeneralProperties<Game>.mark,
+            SGFGeneralProperties<Game>.nodeName,
+            SGFGeneralProperties<Game>.printMoveMode,
+            SGFGeneralProperties<Game>.selected,
+            SGFGeneralProperties<Game>.square,
+            SGFGeneralProperties<Game>.triangle,
+            SGFGeneralProperties<Game>.unclearPos,
+            SGFGeneralProperties<Game>.value,
+            SGFGeneralProperties<Game>.view,
+            SGFGeneralProperties<Game>.application,
+            SGFGeneralProperties<Game>.charset,
+            SGFGeneralProperties<Game>.fileformat,
+            SGFGeneralProperties<Game>.game,
+            SGFGeneralProperties<Game>.style,
+            SGFGeneralProperties<Game>.size,
+            SGFGeneralProperties<Game>.annotation,
+            SGFGeneralProperties<Game>.blackRank,
+            SGFGeneralProperties<Game>.blackTeam,
+            SGFGeneralProperties<Game>.copyright,
+            SGFGeneralProperties<Game>.date,
+            SGFGeneralProperties<Game>.event,
+            SGFGeneralProperties<Game>.gameComment,
+            SGFGeneralProperties<Game>.gameName,
+            SGFGeneralProperties<Game>.opening,
+            SGFGeneralProperties<Game>.overtime,
+            SGFGeneralProperties<Game>.playerBlack,
+            SGFGeneralProperties<Game>.place,
+            SGFGeneralProperties<Game>.playerWhite,
+            SGFGeneralProperties<Game>.result,
+            SGFGeneralProperties<Game>.round,
+            SGFGeneralProperties<Game>.rules,
+            SGFGeneralProperties<Game>.source,
+            SGFGeneralProperties<Game>.timeLimit,
+            SGFGeneralProperties<Game>.user,
+            SGFGeneralProperties<Game>.whiteRank,
+            SGFGeneralProperties<Game>.whiteTeam,
         ]
     }
 }

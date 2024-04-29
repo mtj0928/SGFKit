@@ -9,7 +9,7 @@ public protocol SGFGame {
 
 public protocol SGFPropertyTable {
     associatedtype Game: SGFGame
-    func property(identifier: String) throws -> SGFPropertyEntry<Game>?
+    func property(identifier: String) throws -> (any SGFPropertyEntryProtocol<Game>)?
 }
 
 public protocol SGFPoint: Hashable, Sendable {

@@ -67,53 +67,66 @@ public final class Parser<Game: SGFGame> {
 
     private func property() throws -> SGFProperty<Game> {
         let (identifier, property) = try propertyIdentifier()
-        let expectedType = property?.type.type
+        let expectedType = property?.rootType
         index += 1
 
-        let firstType = expectedType?.first
-        let previousIndex = index
-        do {
-            let firstValue = try propertyValue(expectedType: firstType)
-            var propValues = [firstValue]
-            while index < tokens.count {
-                let previousIndex = index
-                guard let propertyValue = try? propertyValue(expectedType: firstType) else {
-                    index = previousIndex
-                    break
-                }
-                propValues += [propertyValue]
+        func unionProperty(_ union: SGFValueTypeCollection<Game>.SGFValueUnion?) throws -> SGFPropValue<Game> {
+            let previousIndex = index
+            do {
+                return try propertyValue(expectedType: union?.first)
             }
-            return SGFProperty(identifier: identifier, values: propValues)
+            catch {
+                guard let secondType = expectedType?.union.second else {
+                    throw error
+                }
+                index = previousIndex
+                return try propertyValue(expectedType: secondType)
+            }
         }
-        catch {
-            guard let secondType = expectedType?.second else {
-                throw error
-            }
-            index = previousIndex
-            var propValues = [try propertyValue(expectedType: secondType)]
+
+        switch expectedType {
+        case .single(let union):
+            let propValue = try unionProperty(union)
+            return SGFProperty(identifier: identifier, values: [propValue])
+        case .list(let union):
+            var values: [SGFPropValue<Game>] = [try unionProperty(union)]
             while index < tokens.count {
                 let previousIndex = index
-                guard let propertyValue = try? propertyValue(expectedType: secondType) else {
+                guard let node = try? unionProperty(union) else {
                     index = previousIndex
                     break
                 }
-                propValues += [propertyValue]
+                values.append(node)
             }
-            return SGFProperty(identifier: identifier, values: propValues)
+            return SGFProperty(identifier: identifier, values: values)
+        case .elist(let union):
+            var values: [SGFPropValue<Game>] = []
+            while index < tokens.count {
+                let previousIndex = index
+                guard let node = try? unionProperty(union) else {
+                    index = previousIndex
+                    break
+                }
+                values.append(node)
+            }
+            return SGFProperty(identifier: identifier, values: values)
+        case nil:
+            let value = try unionProperty(nil)
+            return SGFProperty(identifier: identifier, values: [value])
         }
     }
 
-    private func propertyIdentifier() throws -> (SGFPropIdent<Game>, SGFPropertyEntry<Game>?) {
+    private func propertyIdentifier() throws -> (SGFPropIdent<Game>, (any SGFPropertyEntryProtocol<Game>)?) {
         guard case .identifier(let letters) = currentToken.kind
         else {
-            throw ParserError.unexpectedToken(expectedToken: .identifier, at: currentToken.position)
+            throw ParserError<Game>.unexpectedToken(expectedToken: .identifier, at: currentToken.position)
         }
 
         let property = try game.propertyTable.property(identifier: letters)
         return (SGFPropIdent(letters: letters), property)
     }
 
-    private func propertyValue(expectedType: SGFValueComposedType?) throws -> SGFPropValue<Game> {
+    private func propertyValue(expectedType: SGFValueTypeCollection<Game>.SGFCompose?) throws -> SGFPropValue<Game> {
         try precondition(expected: .leftBracket)
         index += 1
         let value = try cValeType(expectedType: expectedType)
@@ -122,7 +135,7 @@ public final class Parser<Game: SGFGame> {
         return SGFPropValue(type: value)
     }
 
-    private func cValeType(expectedType: SGFValueComposedType?) throws -> SGFCValueType<Game> {
+    private func cValeType(expectedType: SGFValueTypeCollection<Game>.SGFCompose?) throws -> SGFCValueType<Game> {
         switch expectedType {
         case .single(let expectedType):
             return .single(try value(expectedType: expectedType))
@@ -137,9 +150,9 @@ public final class Parser<Game: SGFGame> {
         }
     }
 
-    private func value(expectedType: SGFValuePrimitiveType?) throws -> SGFValueType<Game> {
+    private func value(expectedType: SGFValueTypeCollection<Game>.SGFValuePrimitiveValue?) throws -> SGFValueType<Game> {
         switch expectedType {
-        case .some(SGFValuePrimitiveType.none): return .none
+        case .some(.none): return .none
         case .number:
             let value = try number()
             index += 1
@@ -190,7 +203,7 @@ public final class Parser<Game: SGFGame> {
               !text.contains("."),
               let number = Int(text)
         else {
-            throw ParserError.typeMismatch(expectedType: .single(.number), at: currentToken.position)
+            throw ParserError<Game>.typeMismatch(expectedType: .number, at: currentToken.position)
         }
         return .number(number)
     }
@@ -199,7 +212,7 @@ public final class Parser<Game: SGFGame> {
         guard case .value(let text) = currentToken.kind,
               let number = Double(text)
         else {
-            throw ParserError.typeMismatch(expectedType: .single(.real), at: currentToken.position)
+            throw ParserError<Game>.typeMismatch(expectedType: .real, at: currentToken.position)
         }
         return .real(number)
     }
@@ -209,7 +222,7 @@ public final class Parser<Game: SGFGame> {
               let number = Int(text),
               number == 1 || number == 2
         else {
-            throw ParserError.typeMismatch(expectedType: .single(.double), at: currentToken.position)
+            throw ParserError<Game>.typeMismatch(expectedType: .double, at: currentToken.position)
         }
         return .double(number == 1 ? .normal : .emphasized)
     }
@@ -218,21 +231,21 @@ public final class Parser<Game: SGFGame> {
         guard case .value(let text) = currentToken.kind,
               text == "B" || text == "W"
         else {
-            throw ParserError.typeMismatch(expectedType: .single(.color), at: currentToken.position)
+            throw ParserError<Game>.typeMismatch(expectedType: .color, at: currentToken.position)
         }
         return .color(text == "B" ? .black : .white)
     }
 
     private func simpleText() throws -> SGFValueType<Game> {
         guard case .value(let text) = currentToken.kind else {
-            throw ParserError.typeMismatch(expectedType: .single(.simpleText), at: currentToken.position)
+            throw ParserError<Game>.typeMismatch(expectedType: .simpleText, at: currentToken.position)
         }
         return .simpleText(text)
     }
 
     private func text() throws -> SGFValueType<Game> {
         guard case .value(let text) = currentToken.kind else {
-            throw ParserError.typeMismatch(expectedType: .single(.text), at: currentToken.position)
+            throw ParserError<Game>.typeMismatch(expectedType: .text, at: currentToken.position)
         }
         return .text(text)
     }
@@ -241,7 +254,7 @@ public final class Parser<Game: SGFGame> {
         guard case .value(let text) = currentToken.kind,
               let point = try? Game.Point(value: text)
         else {
-            throw ParserError.typeMismatch(expectedType: .single(.point), at: currentToken.position)
+            throw ParserError<Game>.typeMismatch(expectedType: .point, at: currentToken.position)
         }
         return .point(point)
     }
@@ -250,7 +263,7 @@ public final class Parser<Game: SGFGame> {
         guard case .value(let text) = currentToken.kind,
               let move = try? Game.Move(value: text)
         else {
-            throw ParserError.typeMismatch(expectedType: .single(.move), at: currentToken.position)
+            throw ParserError<Game>.typeMismatch(expectedType: .move, at: currentToken.position)
         }
         return .move(move)
     }
@@ -259,7 +272,7 @@ public final class Parser<Game: SGFGame> {
         guard case .value(let text) = currentToken.kind,
               let stone = try? Game.Stone(value: text)
         else {
-            throw ParserError.typeMismatch(expectedType: .single(.stone), at: currentToken.position)
+            throw ParserError<Game>.typeMismatch(expectedType: .stone, at: currentToken.position)
         }
         return .stone(stone)
     }
@@ -269,7 +282,7 @@ public final class Parser<Game: SGFGame> {
 extension Parser {
     private func precondition(expected: TokenKind.Case) throws {
         if currentToken.kind.case == expected { return }
-        throw ParserError.unexpectedToken(expectedToken: expected, at: currentToken.position)
+        throw ParserError<Game>.unexpectedToken(expectedToken: expected, at: currentToken.position)
     }
 
     private var currentToken: Token {
@@ -286,7 +299,7 @@ extension Parser {
     }
 }
 
-public enum ParserError: Error {
+public enum ParserError<Game: SGFGame>: Error {
     case unexpectedToken(expectedToken: TokenKind.Case, at: String.Index)
-    case typeMismatch(expectedType: SGFValueComposedType, at: String.Index)
+    case typeMismatch(expectedType: SGFValueTypeCollection<Game>.SGFValuePrimitiveValue, at: String.Index)
 }
