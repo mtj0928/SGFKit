@@ -1,4 +1,6 @@
 public final class Parser<Game: SGFGame> {
+    public typealias Nodes = SGFNodes<Game>
+
     let game: Game
     let tokens: [Token]
     private var index = 0
@@ -8,36 +10,36 @@ public final class Parser<Game: SGFGame> {
         self.tokens = tokens
     }
 
-    public func perse() throws -> SGFCollection<Game> {
+    public func perse() throws -> Nodes.Collection {
         index = 0
         let collection = try collection()
         return collection
     }
 
-    private func collection() throws -> SGFCollection<Game> {
-        var gameTrees: [SGFGameTree<Game>] = []
+    private func collection() throws -> Nodes.Collection {
+        var gameTrees: [Nodes.GameTree] = []
         while index < tokens.count {
             gameTrees += try [gameTree()]
         }
-        return SGFCollection(gameTrees: gameTrees)
+        return Nodes.Collection(gameTrees: gameTrees)
     }
 
-    private func gameTree() throws -> SGFGameTree<Game> {
+    private func gameTree() throws -> Nodes.GameTree {
         try precondition(expected: .leftParenthesis)
         index += 1
 
         let sequence = try sequence()
-        var gameTrees: [SGFGameTree<Game>] = []
+        var gameTrees: [Nodes.GameTree] = []
         while currentToken.kind != .rightParenthesis {
             gameTrees += try [gameTree()]
         }
 
         index += 1
-        return SGFGameTree(sequence: sequence, gameTrees: gameTrees)
+        return Nodes.GameTree(sequence: sequence, gameTrees: gameTrees)
     }
 
-    private func sequence() throws -> SGFSequence<Game> {
-        var nodes: [SGFNode<Game>] = [try node()]
+    private func sequence() throws -> Nodes.Sequence {
+        var nodes = [try node()]
 
         while index < tokens.count {
             let previousIndex = index
@@ -47,13 +49,13 @@ public final class Parser<Game: SGFGame> {
             }
             nodes += [node]
         }
-        return SGFSequence(nodes: nodes)
+        return Nodes.Sequence(nodes: nodes)
     }
 
-    private func node() throws -> SGFNode<Game> {
+    private func node() throws -> Nodes.Node {
         try precondition(expected: .semicolon)
         index += 1
-        var properties: [SGFProperty<Game>] = []
+        var properties: [Nodes.Property] = []
         while index < tokens.count {
             let previousIndex = index
             guard let property = try? property() else {
@@ -62,19 +64,19 @@ public final class Parser<Game: SGFGame> {
             }
             properties += [property]
         }
-        return SGFNode(properties: properties)
+        return Nodes.Node(properties: properties)
     }
 
-    private func property() throws -> SGFProperty<Game> {
+    private func property() throws -> Nodes.Property {
         let (identifier, property) = try propertyIdentifier()
         let expectedType = property?.rootType
         index += 1
 
-        func extractSequence(for sequence: SGFValueTypeCollection<Game>.SGFValueSequence?) throws -> SGFProperty<Game> {
+        func extractSequence(for sequence: SGFValueTypeCollection<Game>.SGFValueSequence?) throws -> Nodes.Property {
             switch sequence {
             case .single(let compose):
                 let value = try propertyValue(expectedType: compose)
-                return SGFProperty(identifier: identifier, values: [value])
+                return Nodes.Property(identifier: identifier, values: [value])
             case .list(let list):
                 var values = [try propertyValue(expectedType: list.compose)]
                 while index < tokens.count {
@@ -85,9 +87,9 @@ public final class Parser<Game: SGFGame> {
                     }
                     values += [value]
                 }
-                return SGFProperty(identifier: identifier, values: values)
+                return Nodes.Property(identifier: identifier, values: values)
             case .elist(let elist):
-                var values: [SGFPropValue<Game>] = []
+                var values: [Nodes.PropValue] = []
                 while index < tokens.count {
                     let previousIndex = index
                     guard let value = try? propertyValue(expectedType: elist.compose) else {
@@ -96,10 +98,10 @@ public final class Parser<Game: SGFGame> {
                     }
                     values += [value]
                 }
-                return SGFProperty(identifier: identifier, values: values)
+                return Nodes.Property(identifier: identifier, values: values)
             case nil:
                 let value = try propertyValue(expectedType: nil)
-                return SGFProperty(identifier: identifier, values: [value])
+                return Nodes.Property(identifier: identifier, values: [value])
             }
         }
 
@@ -119,26 +121,26 @@ public final class Parser<Game: SGFGame> {
         }
     }
 
-    private func propertyIdentifier() throws -> (SGFPropIdent<Game>, (any SGFPropertyEntryProtocol<Game>)?) {
+    private func propertyIdentifier() throws -> (Nodes.PropIdent, (any SGFPropertyEntryProtocol<Game>)?) {
         guard case .identifier(let letters) = currentToken.kind
         else {
             throw ParserError<Game>.unexpectedToken(expectedToken: .identifier, at: currentToken.position)
         }
 
         let property = try game.propertyTable.property(identifier: letters)
-        return (SGFPropIdent(letters: letters), property)
+        return (Nodes.PropIdent(letters: letters), property)
     }
 
-    private func propertyValue(expectedType: SGFValueTypeCollection<Game>.SGFCompose?) throws -> SGFPropValue<Game> {
+    private func propertyValue(expectedType: SGFValueTypeCollection<Game>.SGFCompose?) throws -> Nodes.PropValue {
         try precondition(expected: .leftBracket)
         index += 1
         let value = try cValeType(expectedType: expectedType)
         try precondition(expected: .rightBracket)
         index += 1
-        return SGFPropValue(type: value)
+        return Nodes.PropValue(type: value)
     }
 
-    private func cValeType(expectedType: SGFValueTypeCollection<Game>.SGFCompose?) throws -> SGFCValueType<Game> {
+    private func cValeType(expectedType: SGFValueTypeCollection<Game>.SGFCompose?) throws -> Nodes.CValueType {
         switch expectedType {
         case .single(let expectedType):
             return .single(try value(expectedType: expectedType))
@@ -153,7 +155,7 @@ public final class Parser<Game: SGFGame> {
         }
     }
 
-    private func value(expectedType: SGFValueTypeCollection<Game>.SGFValuePrimitiveValue?) throws -> SGFValueType<Game> {
+    private func value(expectedType: SGFValueTypeCollection<Game>.SGFValuePrimitiveValue?) throws -> Nodes.ValueType {
         switch expectedType {
         case .some(.none): return .none
         case .number:
@@ -201,7 +203,7 @@ public final class Parser<Game: SGFGame> {
         }
     }
 
-    private func number() throws -> SGFValueType<Game> {
+    private func number() throws -> Nodes.ValueType {
         guard case .value(let text) = currentToken.kind,
               !text.contains("."),
               let number = Int(text)
@@ -211,7 +213,7 @@ public final class Parser<Game: SGFGame> {
         return .number(number)
     }
 
-    private func real() throws -> SGFValueType<Game> {
+    private func real() throws -> Nodes.ValueType {
         guard case .value(let text) = currentToken.kind,
               let number = Double(text)
         else {
@@ -220,7 +222,7 @@ public final class Parser<Game: SGFGame> {
         return .real(number)
     }
 
-    private func double() throws -> SGFValueType<Game> {
+    private func double() throws -> Nodes.ValueType {
         guard case .value(let text) = currentToken.kind,
               let number = Int(text),
               number == 1 || number == 2
@@ -230,7 +232,7 @@ public final class Parser<Game: SGFGame> {
         return .double(number == 1 ? .normal : .emphasized)
     }
 
-    private func color() throws -> SGFValueType<Game> {
+    private func color() throws -> Nodes.ValueType {
         guard case .value(let text) = currentToken.kind,
               text == "B" || text == "W"
         else {
@@ -239,21 +241,21 @@ public final class Parser<Game: SGFGame> {
         return .color(text == "B" ? .black : .white)
     }
 
-    private func simpleText() throws -> SGFValueType<Game> {
+    private func simpleText() throws -> Nodes.ValueType {
         guard case .value(let text) = currentToken.kind else {
             throw ParserError<Game>.typeMismatch(expectedType: .simpleText, at: currentToken.position)
         }
         return .simpleText(text)
     }
 
-    private func text() throws -> SGFValueType<Game> {
+    private func text() throws -> Nodes.ValueType {
         guard case .value(let text) = currentToken.kind else {
             throw ParserError<Game>.typeMismatch(expectedType: .text, at: currentToken.position)
         }
         return .text(text)
     }
 
-    private func point() throws -> SGFValueType<Game> {
+    private func point() throws -> Nodes.ValueType {
         guard case .value(let text) = currentToken.kind,
               let point = try? Game.Point(value: text)
         else {
@@ -262,7 +264,7 @@ public final class Parser<Game: SGFGame> {
         return .point(point)
     }
 
-    private func move() throws -> SGFValueType<Game> {
+    private func move() throws -> Nodes.ValueType {
         guard case .value(let text) = currentToken.kind,
               let move = try? Game.Move(value: text)
         else {
@@ -271,7 +273,7 @@ public final class Parser<Game: SGFGame> {
         return .move(move)
     }
 
-    private func stone() throws -> SGFValueType<Game> {
+    private func stone() throws -> Nodes.ValueType {
         guard case .value(let text) = currentToken.kind,
               let stone = try? Game.Stone(value: text)
         else {
@@ -294,7 +296,7 @@ extension Parser {
 }
 
 extension Parser {
-    public static func parse(input: String, for game: Game) throws -> SGFCollection<Game> {
+    public static func parse(input: String, for game: Game) throws -> Nodes.Collection {
         let lexer = Lexer(input: input)
         let tokens = try lexer.lex()
         let parser = Parser(game: game, tokens: tokens)
