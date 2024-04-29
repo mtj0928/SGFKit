@@ -1,15 +1,10 @@
-public enum SGFType<Game: SGFGame>: Hashable & Sendable {
-    case single(SGFValueTypeCollection<Game>.SGFValueUnion)
-    case list(SGFValueTypeCollection<Game>.SGFValueUnion)
-    case elist(SGFValueTypeCollection<Game>.SGFValueUnion)
+public protocol SGFTypeProtocol: Hashable, Sendable {
+    associatedtype Return: Hashable, Sendable
+}
 
-    var union: SGFValueTypeCollection<Game>.SGFValueUnion {
-        switch self {
-        case .single(let union): union
-        case .list(let union): union
-        case .elist(let union): union
-        }
-    }
+public enum SGFType<Game: SGFGame>: Hashable & Sendable {
+    case single(SGFValueTypeCollection<Game>.SGFValueSequence)
+    case union(SGFValueTypeCollection<Game>.SGFValueSequence, SGFValueTypeCollection<Game>.SGFValueSequence)
 }
 
 public struct SGFValueRootTypeInformation<Game: SGFGame, Value: Hashable & Sendable>: Hashable, Sendable {
@@ -22,7 +17,7 @@ public struct SGFValueRootTypeInformation<Game: SGFGame, Value: Hashable & Senda
     var type: SGFType<Game>
 
     public static func list<V: Hashable & Sendable>(of value: PrimitiveType<V>) -> SGFValueRootTypeInformation<Game, ListType<V>> {
-        .init(type: .list(.init(first: .single(value.type))))
+        .init(type: .single(.list(.init(compose: .single(value.type)))))
     }
 
     public static func list<
@@ -31,13 +26,13 @@ public struct SGFValueRootTypeInformation<Game: SGFGame, Value: Hashable & Senda
     >(
         of value: ComposedType<V1, V2>
     ) -> SGFValueRootTypeInformation<Game, ListType<ComposedType<V1, V2>>> {
-        .init(type: .list(.init(first: value.compose)))
+        .init(type: .single(.list(.init(compose: value.compose))))
     }
 
     public static func elist<V: Hashable & Sendable>(
         of value: PrimitiveType<V>
     ) -> SGFValueRootTypeInformation<Game, EListType<V>> {
-        .init(type: .elist(.init(first: .single(value.type))))
+        .init(type: .single(.elist(.init(compose: .single(value.type)))))
     }
 
     public static func union<
@@ -49,7 +44,7 @@ public struct SGFValueRootTypeInformation<Game: SGFGame, Value: Hashable & Senda
         _ first: ComposedType<TypeA, TypeB>,
         or second: ComposedType<TypeC, TypeD>
     ) -> SGFValueRootTypeInformation<Game, UnionType<ComposedType<TypeA, TypeB>, ComposedType<TypeC, TypeD>>> {
-        .init(type: .single(.init(first: first.compose, second: second.compose)))
+        .init(type: .union(.single(first.compose), .single(second.compose)))
     }
 
     public static func union<
@@ -60,7 +55,7 @@ public struct SGFValueRootTypeInformation<Game: SGFGame, Value: Hashable & Senda
         _ first: PrimitiveType<ValueA>,
         or second: ComposedType<ValueB, ValueC>
     ) -> SGFValueRootTypeInformation<Game, UnionType<ValueA, ComposedType<ValueB, ValueC>>> {
-        .init(type: .single(.init(first: .single(first.type), second: second.compose)))
+        .init(type: .union(.single(.single(first.type)), .single(second.compose)))
     }
 
     public static func compose<
@@ -70,11 +65,13 @@ public struct SGFValueRootTypeInformation<Game: SGFGame, Value: Hashable & Senda
         _ first: PrimitiveType<V1>,
         _ second: PrimitiveType<V2>
     ) -> SGFValueRootTypeInformation<Game, ComposedType<V1, V2>>  {
-        .init(type: .single(.init(first: .compose(first.type, second.type))))
+        .init(type: .single(.single(.compose(first.type, second.type))))
     }
 
-    public static func single<V: Hashable & Sendable>(_ value: UnionType<V, Never>) -> SGFValueRootTypeInformation<Game, V> {
-        .init(type: .single(value.union))
+    public static func single<V: Hashable & Sendable>(
+        _ value: SGFValueTypeCollection<Game>.SGFValuePrimitiveType<V>
+    ) -> SGFValueRootTypeInformation<Game, V> {
+        .init(type: .single(.single(.single(value.type))))
     }
 
     public static var none: SGFValueRootTypeInformation<Game, Never> { .single(.none) }
@@ -90,62 +87,22 @@ public struct SGFValueRootTypeInformation<Game: SGFGame, Value: Hashable & Senda
 }
 
 public enum SGFValueTypeCollection<Game: SGFGame> {
-    // MARK: - List
-
-    public struct SGFValueList: Hashable, Sendable {
-        public var union: SGFValueUnion
-    }
-
-    public struct SGFValueListType<Object: Hashable & Sendable>: Hashable, Sendable {
-        var list: SGFValueList
-
-        public static func list(of value: SGFValuePrimitiveType<Object>) -> SGFValueListType<Object> {
-            SGFValueListType(list: SGFValueList(union: SGFValueUnion(first: .single(value.type))))
-        }
-
-        public static func list<
-            V1: Hashable & Sendable,
-            V2: Hashable & Sendable
-        >(of value: SGFValueComposedType<V1, V2>) -> SGFValueListType<SGFValueComposedType<V1, V2>> {
-            .init(list: SGFValueList(union: SGFValueUnion(first: value.compose)))
-        }
-    }
-
-    public struct SGFValueEList: Hashable, Sendable {
-        public var union: SGFValueUnion
-    }
-
-    public struct SGFValueEListType<Object: Hashable & Sendable>: Hashable, Sendable {
-        var list: SGFValueEList
-
-        public static func elist(of value: SGFValuePrimitiveType<Object>) -> SGFValueEListType<Object> {
-            SGFValueEListType(list: SGFValueEList(union: SGFValueUnion(first: .single(value.type))))
-        }
-
-        public static func elist<
-            V1: Hashable & Sendable,
-            V2: Hashable & Sendable
-        >(of value: SGFValueComposedType<V1, V2>) -> SGFValueEListType<SGFValueComposedType<V1, V2>> {
-            .init(list: SGFValueEList(union: SGFValueUnion(first: value.compose)))
-        }
-    }
-
     // MARK: - Union
 
     public struct SGFValueUnion: Hashable, Sendable {
-        public var first: SGFCompose
-        public var second: SGFCompose?
+        public var first: SGFValueSequence
+        public var second: SGFValueSequence?
     }
 
     public struct SGFValueUnionType<PrimitiveTypeA: Hashable & Sendable, PrimitiveTypeB: Hashable & Sendable>: Hashable, Sendable {
         let union: SGFValueUnion
 
         public static func single<ValueA: Hashable & Sendable>(_ type: SGFValuePrimitiveType<ValueA>) -> SGFValueUnionType<ValueA, Never> {
-            .init(union: SGFValueUnion(first: .single(type.type)))
+            .init(union: .init(first: .single(.single(type.type))))
         }
 
         public static func compose<ValueA: Hashable & Sendable, ValueB: Hashable & Sendable>(_ type: SGFValueComposedType<ValueA, ValueB>) -> SGFValueUnionType<ValueA, ValueB> {
-            .init(union: SGFValueUnion(first: type.compose))
+            .init(union: .init(first: .single(type.compose)))
         }
 
         public static func union<
@@ -156,7 +113,7 @@ public enum SGFValueTypeCollection<Game: SGFGame> {
             _ first: SGFValuePrimitiveType<ValueA>,
             or second: SGFValueComposedType<ValueB, ValueC>
         ) -> SGFValueUnionType<ValueA, SGFValueComposedType<ValueB, ValueC>> {
-            .init(union: SGFValueUnion(first: .single(first.type), second: second.compose))
+            .init(union: .init(first: .single(.single(first.type)), second: .single(second.compose)))
         }
 
         public static func union<
@@ -168,7 +125,7 @@ public enum SGFValueTypeCollection<Game: SGFGame> {
             _ first: SGFValueComposedType<ValueA, ValueB>,
             or second: SGFValueComposedType<ValueC, ValueD>
         ) -> SGFValueUnionType<SGFValueComposedType<ValueA, ValueB>, SGFValueComposedType<ValueC, ValueD>> {
-            .init(union: SGFValueUnion(first: first.compose, second: second.compose))
+            .init(union: .init(first: .single(first.compose), second: .single(second.compose)))
         }
 
         public static var none: SGFValueUnionType<Never, Never> { .single(.none) }
@@ -183,6 +140,43 @@ public enum SGFValueTypeCollection<Game: SGFGame> {
         public static var stone: SGFValueUnionType<Game.Stone, Never> { .single(.stone) }
     }
 
+    // MARK: - List
+
+    public enum SGFValueSequence: Hashable, Sendable {
+        case single(SGFCompose)
+        case list(SGFValueList)
+        case elist(SGFValueEList)
+    }
+
+    public enum SGFValueSequenceType<Object: Hashable & Sendable>: Hashable, Sendable {
+        case single(Object)
+        case list(Object)
+        case elist(Object)
+    }
+
+    public struct SGFValueList: Hashable, Sendable {
+        public var compose: SGFCompose
+    }
+
+    public struct SGFValueListType<Object: Hashable & Sendable>: Sendable, Hashable {
+        var compose: SGFValueList
+
+        public static func list(of value: SGFValuePrimitiveType<Object>) -> SGFValueListType<Object> {
+            SGFValueListType(compose: SGFValueList(compose: .single(value.type)))
+        }
+    }
+
+    public struct SGFValueEList: Hashable, Sendable {
+        public var compose: SGFCompose
+    }
+
+    public struct SGFValueEListType<Object: Hashable & Sendable>: Hashable, Sendable {
+        var list: SGFValueEList
+
+        public static func elist(of value: SGFValuePrimitiveType<Object>) -> SGFValueEListType<Object> {
+            SGFValueEListType(list: SGFValueEList(compose: .single(value.type)))
+        }
+    }
     // MARK: - Compose
 
     public enum SGFCompose: Hashable, Sendable {

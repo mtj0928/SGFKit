@@ -70,49 +70,52 @@ public final class Parser<Game: SGFGame> {
         let expectedType = property?.rootType
         index += 1
 
-        func unionProperty(_ union: SGFValueTypeCollection<Game>.SGFValueUnion?) throws -> SGFPropValue<Game> {
-            let previousIndex = index
-            do {
-                return try propertyValue(expectedType: union?.first)
-            }
-            catch {
-                guard let secondType = expectedType?.union.second else {
-                    throw error
+        func extractSequence(for sequence: SGFValueTypeCollection<Game>.SGFValueSequence?) throws -> SGFProperty<Game> {
+            switch sequence {
+            case .single(let compose):
+                let value = try propertyValue(expectedType: compose)
+                return SGFProperty(identifier: identifier, values: [value])
+            case .list(let list):
+                var values = [try propertyValue(expectedType: list.compose)]
+                while index < tokens.count {
+                    let previousIndex = index
+                    guard let value = try? propertyValue(expectedType: list.compose) else {
+                        index = previousIndex
+                        break
+                    }
+                    values += [value]
                 }
-                index = previousIndex
-                return try propertyValue(expectedType: secondType)
+                return SGFProperty(identifier: identifier, values: values)
+            case .elist(let elist):
+                var values: [SGFPropValue<Game>] = []
+                while index < tokens.count {
+                    let previousIndex = index
+                    guard let value = try? propertyValue(expectedType: elist.compose) else {
+                        index = previousIndex
+                        break
+                    }
+                    values += [value]
+                }
+                return SGFProperty(identifier: identifier, values: values)
+            case nil:
+                let value = try propertyValue(expectedType: nil)
+                return SGFProperty(identifier: identifier, values: [value])
             }
         }
 
         switch expectedType {
-        case .single(let union):
-            let propValue = try unionProperty(union)
-            return SGFProperty(identifier: identifier, values: [propValue])
-        case .list(let union):
-            var values: [SGFPropValue<Game>] = [try unionProperty(union)]
-            while index < tokens.count {
-                let previousIndex = index
-                guard let node = try? unionProperty(union) else {
-                    index = previousIndex
-                    break
-                }
-                values.append(node)
+        case .single(let sequence):
+            return try extractSequence(for: sequence)
+        case .union(let sequenceA, let sequenceB):
+            let previousIndex = index
+            do {
+                return try extractSequence(for: sequenceA)
+            } catch {
+                index = previousIndex
+                return try extractSequence(for: sequenceB)
             }
-            return SGFProperty(identifier: identifier, values: values)
-        case .elist(let union):
-            var values: [SGFPropValue<Game>] = []
-            while index < tokens.count {
-                let previousIndex = index
-                guard let node = try? unionProperty(union) else {
-                    index = previousIndex
-                    break
-                }
-                values.append(node)
-            }
-            return SGFProperty(identifier: identifier, values: values)
-        case nil:
-            let value = try unionProperty(nil)
-            return SGFProperty(identifier: identifier, values: [value])
+        default:
+            return try extractSequence(for: nil)
         }
     }
 
