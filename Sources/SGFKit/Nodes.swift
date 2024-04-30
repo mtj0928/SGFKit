@@ -67,11 +67,15 @@ public enum SGFNodes {
         }
     }
 
-    public struct PropIdent: SGFNodeProtocol {
+    public struct PropIdent: SGFNodeProtocol, ExpressibleByStringLiteral {
         public var letters: String
 
         public init(letters: String) {
             self.letters = letters
+        }
+
+        public init(stringLiteral value: StringLiteralType) {
+            self.letters = value
         }
 
         public func string() -> String {
