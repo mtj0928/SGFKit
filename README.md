@@ -9,6 +9,6 @@ let collection = try Parser.parse(input: input)
 let firstNode = collection.gameTrees[0].sequence.nodes[0]
 let firstProperty = firstNode.properties[0]
 
-print("id: \(firstProperty.identifier.letters)") // id: FF
-print("value: \(firstProperty.values[0].type.first.value ?? "none")") // value: ValueType(value: "4")
+print(firstProperty.identifier.letters) // FF
+print(firstProperty.values[0].type.first.value ?? "none") // 4
 ```
