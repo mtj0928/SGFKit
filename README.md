@@ -1,5 +1,5 @@
 # SGFKit
-A library for persing [SGF FF[4]](https://www.red-bean.com/sgf/index.html) file in Swift.
+A library for parsing [SGF FF[4]](https://www.red-bean.com/sgf/index.html) file in Swift.
 
 ## Usage
 ```swift
