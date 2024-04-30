@@ -106,6 +106,19 @@ public enum SGFNodes {
                 return (valueA?.string() ?? "") + ":" + (valueB?.string() ?? "")
             }
         }
+
+        public var first: ValueType? {
+            switch self {
+            case .single(let value), .compose(let value, _): return value
+            }
+        }
+
+        public var second: ValueType? {
+            switch self {
+            case .single: return nil
+            case .compose(_, let value): return value
+            }
+        }
     }
 
     public struct ValueType: SGFNodeProtocol, ExpressibleByStringLiteral {
