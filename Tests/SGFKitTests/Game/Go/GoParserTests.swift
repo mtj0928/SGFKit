@@ -3,7 +3,7 @@ import XCTest
 
 final class GoParserTests: XCTestCase {
 
-    func testSimpleCase() throws {
+    func testParseForSimpleCase() throws {
         let input = "(;FF[4]GM[1];B[aa](;W[bb])(;W[cc]))"
         let collection = try Parser.parse(input: input)
 
@@ -15,5 +15,12 @@ final class GoParserTests: XCTestCase {
                 values: [SGFNodes.PropValue(type: .single("4"))]
             )
         )
+    }
+
+    func testString() throws {
+        let input = "(;FF[4]GM[1];B[aa](;W[bb])(;W[cc]))"
+        let collection = try Parser.parse(input: input)
+
+        XCTAssertEqual(collection.string(), "(;FF[4]GM[1];B[aa](;W[bb])(;W[cc]))")
     }
 }

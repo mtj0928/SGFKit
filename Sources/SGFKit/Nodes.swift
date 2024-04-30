@@ -1,13 +1,21 @@
+public protocol SGFNodeProtocol: Hashable, Sendable {
+    func string() -> String
+}
+
 public enum SGFNodes {
-    public struct Collection: Hashable, Sendable {
+    public struct Collection: SGFNodeProtocol {
         public var gameTrees: [GameTree]
 
         public init(gameTrees: [GameTree]) {
             self.gameTrees = gameTrees
         }
+
+        public func string() -> String {
+            gameTrees.reduce("", { $0 + $1.string() })
+        }
     }
 
-    public struct GameTree: Hashable, Sendable {
+    public struct GameTree: SGFNodeProtocol {
         public var sequence: Sequence
         public var gameTrees: [GameTree]
 
@@ -15,25 +23,37 @@ public enum SGFNodes {
             self.sequence = sequence
             self.gameTrees = gameTrees
         }
+
+        public func string() -> String {
+            "(" + sequence.string() + gameTrees.reduce("", { $0 + $1.string() }) + ")"
+        }
     }
 
-    public struct Sequence: Hashable, Sendable {
+    public struct Sequence: SGFNodeProtocol {
         public var nodes: [Node]
 
         public init(nodes: [Node]) {
             self.nodes = nodes
         }
+
+        public func string() -> String {
+            nodes.reduce("", { $0 + $1.string() })
+        }
     }
 
-    public struct Node: Hashable, Sendable {
+    public struct Node: SGFNodeProtocol{
         public var properties: [Property]
 
         public init(properties: [Property]) {
             self.properties = properties
         }
+
+        public func string() -> String {
+            ";" + properties.reduce("", { $0 + $1.string() })
+        }
     }
 
-    public struct Property: Hashable, Sendable {
+    public struct Property: SGFNodeProtocol {
         public var identifier: PropIdent
         public var values: [PropValue]
 
@@ -41,30 +61,50 @@ public enum SGFNodes {
             self.identifier = identifier
             self.values = values
         }
+
+        public func string() -> String {
+            identifier.string() + values.reduce("", { $0 + $1.string() })
+        }
     }
 
-    public struct PropIdent: Hashable, Sendable {
+    public struct PropIdent: SGFNodeProtocol {
         public var letters: String
 
         public init(letters: String) {
             self.letters = letters
         }
+
+        public func string() -> String {
+            letters
+        }
     }
 
-    public struct PropValue: Hashable, Sendable {
+    public struct PropValue: SGFNodeProtocol {
         public var type: CValueType
 
         public init(type: CValueType) {
             self.type = type
         }
+
+        public func string() -> String {
+            "[" + type.string() + "]"
+        }
     }
 
-    public enum CValueType: Hashable, Sendable {
+    public enum CValueType: SGFNodeProtocol {
         case single(ValueType?)
         case compose(ValueType?, ValueType?)
+
+        public func string() -> String {
+            switch self {
+            case .single(let value): return value?.string() ?? ""
+            case .compose(let valueA, let valueB):
+                return (valueA?.string() ?? "") + ":" + (valueB?.string() ?? "")
+            }
+        }
     }
 
-    public struct ValueType: Hashable, Sendable, ExpressibleByStringLiteral {
+    public struct ValueType: SGFNodeProtocol, ExpressibleByStringLiteral {
         public var value: String
 
         public init(_ value: String) {
@@ -73,6 +113,10 @@ public enum SGFNodes {
 
         public init(stringLiteral value: StringLiteralType) {
             self.value = value
+        }
+
+        public func string() -> String {
+            value
         }
     }
 }
