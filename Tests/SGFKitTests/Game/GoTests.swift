@@ -32,7 +32,7 @@ final class GoTests: XCTestCase {
         XCTAssertFalse(node2.has(of: .doubtful))
     }
 
-    func testCompleBranch()  throws {
+    func testComplexBranch()  throws {
         let input = "(;FF[4]C[root](;C[a];C[b](;C[c])(;C[d];C[e]))(;C[f](;C[g];C[h];C[i])(;C[j])))"
         let go = try Go(input: input)
         let tree = go.tree
