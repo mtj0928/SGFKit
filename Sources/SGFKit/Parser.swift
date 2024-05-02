@@ -1,6 +1,6 @@
 public final class Parser {
     public typealias Nodes = SGFNodes
-    let tokens: [Token]
+    private let tokens: [Token]
     private var index = 0
 
     public init(tokens: [Token]) {

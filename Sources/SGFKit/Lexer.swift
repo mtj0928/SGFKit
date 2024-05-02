@@ -1,15 +1,15 @@
 import Foundation
 
-final class Lexer {
+public final class Lexer {
     private let input: String
     private var index: String.Index
 
-    init(input: String) {
+    public init(input: String) {
         self.input = input
         self.index = input.startIndex
     }
 
-    func lex() throws -> [Token] {
+    public func lex() throws -> [Token] {
         var tokens = [Token]()
         while index < input.endIndex {
             let character = input[index]
@@ -77,6 +77,6 @@ final class Lexer {
     }
 }
 
-enum LexerError: Error {
+public enum LexerError: Error {
     case invalidCharacter(index: String.Index)
 }
