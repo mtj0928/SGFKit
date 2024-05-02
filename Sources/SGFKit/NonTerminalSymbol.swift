@@ -1,21 +1,24 @@
-public protocol SGFNodeProtocol: Hashable, Sendable {
-    func string() -> String
+public protocol NonTerminalSymbol: Hashable, Sendable {
+    /// Converts the symbols to a string in SGF.
+    func convertToSGF() -> String
 }
 
-public enum SGFNodes {
-    public struct Collection: SGFNodeProtocol {
+/// A namespace for non terminal symbol of EBNF which is defined in [the official documents](https://www.red-bean.com/sgf/sgf4.html).
+public enum NonTerminalSymbols {
+    public struct Collection: NonTerminalSymbol {
         public var gameTrees: [GameTree]
 
         public init(gameTrees: [GameTree]) {
             self.gameTrees = gameTrees
         }
 
-        public func string() -> String {
-            gameTrees.reduce("", { $0 + $1.string() })
+        /// Converts the symbols to a string in SGF.
+        public func convertToSGF() -> String {
+            gameTrees.reduce("", { $0 + $1.convertToSGF() })
         }
     }
 
-    public struct GameTree: SGFNodeProtocol {
+    public struct GameTree: NonTerminalSymbol {
         public var sequence: Sequence
         public var gameTrees: [GameTree]
 
@@ -24,36 +27,39 @@ public enum SGFNodes {
             self.gameTrees = gameTrees
         }
 
-        public func string() -> String {
-            "(" + sequence.string() + gameTrees.reduce("", { $0 + $1.string() }) + ")"
+        /// Converts the symbols to a string in SGF.
+        public func convertToSGF() -> String {
+            "(" + sequence.convertToSGF() + gameTrees.reduce("", { $0 + $1.convertToSGF() }) + ")"
         }
     }
 
-    public struct Sequence: SGFNodeProtocol {
+    public struct Sequence: NonTerminalSymbol {
         public var nodes: [Node]
 
         public init(nodes: [Node]) {
             self.nodes = nodes
         }
 
-        public func string() -> String {
-            nodes.reduce("", { $0 + $1.string() })
+        /// Converts the symbols to a string in SGF.
+        public func convertToSGF() -> String {
+            nodes.reduce("", { $0 + $1.convertToSGF() })
         }
     }
 
-    public struct Node: SGFNodeProtocol{
+    public struct Node: NonTerminalSymbol{
         public var properties: [Property]
 
         public init(properties: [Property]) {
             self.properties = properties
         }
 
-        public func string() -> String {
-            ";" + properties.reduce("", { $0 + $1.string() })
+        /// Converts the symbols to a string in SGF.
+        public func convertToSGF() -> String {
+            ";" + properties.reduce("", { $0 + $1.convertToSGF() })
         }
     }
 
-    public struct Property: SGFNodeProtocol {
+    public struct Property: NonTerminalSymbol {
         public var identifier: PropIdent
         public var values: [PropValue]
 
@@ -62,12 +68,13 @@ public enum SGFNodes {
             self.values = values
         }
 
-        public func string() -> String {
-            identifier.string() + values.reduce("", { $0 + $1.string() })
+        /// Converts the symbols to a string in SGF.
+        public func convertToSGF() -> String {
+            identifier.convertToSGF() + values.reduce("", { $0 + $1.convertToSGF() })
         }
     }
 
-    public struct PropIdent: SGFNodeProtocol, ExpressibleByStringLiteral {
+    public struct PropIdent: NonTerminalSymbol, ExpressibleByStringLiteral {
         public var letters: String
 
         public init(letters: String) {
@@ -78,32 +85,35 @@ public enum SGFNodes {
             self.letters = value
         }
 
-        public func string() -> String {
+        /// Converts the symbols to a string in SGF.
+        public func convertToSGF() -> String {
             letters
         }
     }
 
-    public struct PropValue: SGFNodeProtocol {
+    public struct PropValue: NonTerminalSymbol {
         public var type: CValueType
 
         public init(type: CValueType) {
             self.type = type
         }
 
-        public func string() -> String {
-            "[" + type.string() + "]"
+        /// Converts the symbols to a string in SGF.
+        public func convertToSGF() -> String {
+            "[" + type.convertToSGF() + "]"
         }
     }
 
-    public enum CValueType: SGFNodeProtocol {
+    public enum CValueType: NonTerminalSymbol {
         case single(ValueType?)
         case compose(ValueType?, ValueType?)
 
-        public func string() -> String {
+        /// Converts the symbols to a string in SGF.
+        public func convertToSGF() -> String {
             switch self {
-            case .single(let value): return value?.string() ?? ""
+            case .single(let value): return value?.convertToSGF() ?? ""
             case .compose(let valueA, let valueB):
-                return (valueA?.string() ?? "") + ":" + (valueB?.string() ?? "")
+                return (valueA?.convertToSGF() ?? "") + ":" + (valueB?.convertToSGF() ?? "")
             }
         }
 
@@ -121,7 +131,7 @@ public enum SGFNodes {
         }
     }
 
-    public struct ValueType: SGFNodeProtocol, ExpressibleByStringLiteral {
+    public struct ValueType: NonTerminalSymbol, ExpressibleByStringLiteral {
         public var value: String
 
         public init(_ value: String) {
@@ -132,7 +142,8 @@ public enum SGFNodes {
             self.value = value
         }
 
-        public func string() -> String {
+        /// Converts the symbols to a string in SGF.
+        public func convertToSGF() -> String {
             value
         }
     }

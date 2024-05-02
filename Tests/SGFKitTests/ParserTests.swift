@@ -12,64 +12,64 @@ final class GoParserTests: XCTestCase {
         """
         let collection = try Parser.parse(input: input)
 
-        let expected = SGFNodes.Collection(
+        let expected = NonTerminalSymbols.Collection(
             gameTrees: [
-                SGFNodes.GameTree(
-                    sequence: SGFNodes.Sequence(nodes: [
-                        SGFNodes.Node(properties: [
-                            SGFNodes.Property(identifier: "FF", values: [SGFNodes.PropValue(type: .single("4"))]),
-                            SGFNodes.Property(identifier: "C", values: [SGFNodes.PropValue(type: .single("root"))])
+                NonTerminalSymbols.GameTree(
+                    sequence: NonTerminalSymbols.Sequence(nodes: [
+                        NonTerminalSymbols.Node(properties: [
+                            NonTerminalSymbols.Property(identifier: "FF", values: [NonTerminalSymbols.PropValue(type: .single("4"))]),
+                            NonTerminalSymbols.Property(identifier: "C", values: [NonTerminalSymbols.PropValue(type: .single("root"))])
                         ]),
                     ]),
                     gameTrees: [
-                        SGFNodes.GameTree(
-                            sequence: SGFNodes.Sequence(nodes: [
-                                SGFNodes.Node(properties: [
-                                    SGFNodes.Property(
+                        NonTerminalSymbols.GameTree(
+                            sequence: NonTerminalSymbols.Sequence(nodes: [
+                                NonTerminalSymbols.Node(properties: [
+                                    NonTerminalSymbols.Property(
                                         identifier: "C",
-                                        values: [SGFNodes.PropValue(type: .single("a"))]
+                                        values: [NonTerminalSymbols.PropValue(type: .single("a"))]
                                     )
                                 ]),
-                                SGFNodes.Node(properties: [
-                                    SGFNodes.Property(
+                                NonTerminalSymbols.Node(properties: [
+                                    NonTerminalSymbols.Property(
                                         identifier: "C",
-                                        values: [SGFNodes.PropValue(type: .single("b"))]
+                                        values: [NonTerminalSymbols.PropValue(type: .single("b"))]
                                     )
                                 ])
                             ]),
                             gameTrees: [
-                                SGFNodes.GameTree(
-                                    sequence: SGFNodes.Sequence(nodes: [
-                                        SGFNodes.Node(
-                                            properties: [SGFNodes.Property(identifier: "C", values: [SGFNodes.PropValue(type: .single("c"))])]
+                                NonTerminalSymbols.GameTree(
+                                    sequence: NonTerminalSymbols.Sequence(nodes: [
+                                        NonTerminalSymbols.Node(
+                                            properties: [NonTerminalSymbols.Property(identifier: "C", values: [NonTerminalSymbols.PropValue(type: .single("c"))])]
                                         )
                                     ]),
                                     gameTrees: []
                                 ),
-                                SGFNodes.GameTree(
-                                    sequence: SGFNodes.Sequence(nodes: [
-                                        SGFNodes.Node(properties: [SGFNodes.Property(identifier: "C", values: [SGFNodes.PropValue(type: .single("d"))])]),
-                                        SGFNodes.Node(properties: [SGFNodes.Property(identifier: "C", values: [SGFNodes.PropValue(type: .single("e"))])])
+                                NonTerminalSymbols.GameTree(
+                                    sequence: NonTerminalSymbols.Sequence(nodes: [
+                                        NonTerminalSymbols.Node(properties: [NonTerminalSymbols.Property(identifier: "C", values: [NonTerminalSymbols.PropValue(type: .single("d"))])]),
+                                        NonTerminalSymbols.Node(properties: [NonTerminalSymbols.Property(identifier: "C", values: [NonTerminalSymbols.PropValue(type: .single("e"))])])
                                     ]), gameTrees: [])
 
                             ]
                         ),
-                        SGFNodes.GameTree(
-                            sequence: SGFNodes.Sequence(nodes: [
-                                SGFNodes.Node(properties: [SGFNodes.Property(identifier: "C", values: [SGFNodes.PropValue(type: .single("f"))])])
+                        NonTerminalSymbols.GameTree(
+                            sequence: NonTerminalSymbols.Sequence(nodes: [
+                                NonTerminalSymbols.Node(properties: [NonTerminalSymbols.Property(identifier: "C", values: [NonTerminalSymbols.PropValue(type: .single("f"))])])
                             ]),
                             gameTrees: [
-                                SGFNodes.GameTree(
-                                    sequence: SGFNodes.Sequence(nodes: [
-                                        SGFNodes.Node(properties: [SGFNodes.Property(identifier: "C", values: [SGFNodes.PropValue(type: .single("g"))])]),
-                                        SGFNodes.Node(properties: [SGFNodes.Property(identifier: "C", values: [SGFNodes.PropValue(type: .single("h"))])]),
-                                        SGFNodes.Node(properties: [SGFNodes.Property(identifier: "C", values: [SGFNodes.PropValue(type: .single("i"))])])
+                                NonTerminalSymbols.GameTree(
+                                    sequence: NonTerminalSymbols.Sequence(nodes: [
+                                        NonTerminalSymbols.Node(properties: [NonTerminalSymbols.Property(identifier: "C", values: [NonTerminalSymbols.PropValue(type: .single("g"))])]),
+                                        NonTerminalSymbols.Node(properties: [NonTerminalSymbols.Property(identifier: "C", values: [NonTerminalSymbols.PropValue(type: .single("h"))])]),
+                                        NonTerminalSymbols.Node(properties: [NonTerminalSymbols.Property(identifier: "C", values: [NonTerminalSymbols.PropValue(type: .single("i"))])])
                                     ]),
                                     gameTrees: []
                                 ),
-                                SGFNodes.GameTree(
-                                    sequence: SGFNodes.Sequence(nodes: [
-                                        SGFNodes.Node(properties: [SGFNodes.Property(identifier: "C", values: [SGFNodes.PropValue(type: .single("j"))])])
+                                NonTerminalSymbols.GameTree(
+                                    sequence: NonTerminalSymbols.Sequence(nodes: [
+                                        NonTerminalSymbols.Node(properties: [NonTerminalSymbols.Property(identifier: "C", values: [NonTerminalSymbols.PropValue(type: .single("j"))])])
                                     ]),
                                     gameTrees: []
                                 )
@@ -82,7 +82,7 @@ final class GoParserTests: XCTestCase {
         XCTAssertEqual(collection, expected)
     }
 
-    func testString() throws {
+    func testconvertToSGF() throws {
         let input = """
         (;FF[4]C[root](;C[a];C[b](;C[c])
         (;C[d];C[e]))
@@ -92,7 +92,7 @@ final class GoParserTests: XCTestCase {
         let collection = try Parser.parse(input: input)
 
         XCTAssertEqual(
-            collection.string(),
+            collection.convertToSGF(),
             "(;FF[4]C[root](;C[a];C[b](;C[c])(;C[d];C[e]))(;C[f](;C[g];C[h];C[i])(;C[j])))"
         )
     }

@@ -9,22 +9,22 @@ public struct Token: Equatable, Hashable, Sendable {
 }
 
 public enum TokenKind: Equatable, Hashable, Sendable {
-    /// A token indicating `(`.
+    /// A token indicating "(".
     case leftParenthesis
 
-    /// A token indicating `)`.
+    /// A token indicating ")".
     case rightParenthesis
 
-    /// A token indicating `;`.
+    /// A token indicating ";".
     case semicolon
 
-    /// A token indicating `:`.
+    /// A token indicating ":".
     case colon
 
-    /// A token indicating `[`.
+    /// A token indicating "[".
     case leftBracket
 
-    /// A token indicating `]`.
+    /// A token indicating "]".
     case rightBracket
 
     /// A token indicating identifiers.
@@ -34,17 +34,17 @@ public enum TokenKind: Equatable, Hashable, Sendable {
     case value(String)
 
     public enum Case {
-        /// A token indicating `(`.
+        /// A token indicating "(".
         case leftParenthesis
-        /// A token indicating `)`.
+        /// A token indicating ")".
         case rightParenthesis
-        /// A token indicating `;`.
+        /// A token indicating ";".
         case semicolon
-        /// A token indicating `:`.
+        /// A token indicating ":".
         case colon
-        /// A token indicating `[`.
+        /// A token indicating "[".
         case leftBracket
-        /// A token indicating `]`.
+        /// A token indicating "]".
         case rightBracket
         /// A token indicating identifiers.
         case identifier

@@ -1,5 +1,4 @@
 public final class Parser {
-    public typealias Nodes = SGFNodes
     private let tokens: [Token]
     private var index = 0
 
@@ -7,35 +6,35 @@ public final class Parser {
         self.tokens = tokens
     }
 
-    public func perse() throws -> Nodes.Collection {
+    public func perse() throws -> NonTerminalSymbols.Collection {
         index = 0
         let collection = try collection()
         return collection
     }
 
-    private func collection() throws -> Nodes.Collection {
-        var gameTrees: [Nodes.GameTree] = []
+    private func collection() throws -> NonTerminalSymbols.Collection {
+        var gameTrees: [NonTerminalSymbols.GameTree] = []
         while index < tokens.count {
             gameTrees += try [gameTree()]
         }
-        return Nodes.Collection(gameTrees: gameTrees)
+        return NonTerminalSymbols.Collection(gameTrees: gameTrees)
     }
 
-    private func gameTree() throws -> Nodes.GameTree {
+    private func gameTree() throws -> NonTerminalSymbols.GameTree {
         try precondition(expected: .leftParenthesis)
         index += 1
 
         let sequence = try sequence()
-        var gameTrees: [Nodes.GameTree] = []
+        var gameTrees: [NonTerminalSymbols.GameTree] = []
         while currentToken.kind != .rightParenthesis {
             gameTrees += try [gameTree()]
         }
 
         index += 1
-        return Nodes.GameTree(sequence: sequence, gameTrees: gameTrees)
+        return NonTerminalSymbols.GameTree(sequence: sequence, gameTrees: gameTrees)
     }
 
-    private func sequence() throws -> Nodes.Sequence {
+    private func sequence() throws -> NonTerminalSymbols.Sequence {
         var nodes = [try node()]
 
         while index < tokens.count {
@@ -46,13 +45,13 @@ public final class Parser {
             }
             nodes += [node]
         }
-        return Nodes.Sequence(nodes: nodes)
+        return NonTerminalSymbols.Sequence(nodes: nodes)
     }
 
-    private func node() throws -> Nodes.Node {
+    private func node() throws -> NonTerminalSymbols.Node {
         try precondition(expected: .semicolon)
         index += 1
-        var properties: [Nodes.Property] = []
+        var properties: [NonTerminalSymbols.Property] = []
         while index < tokens.count {
             let previousIndex = index
             guard let property = try? property() else {
@@ -61,14 +60,14 @@ public final class Parser {
             }
             properties += [property]
         }
-        return Nodes.Node(properties: properties)
+        return NonTerminalSymbols.Node(properties: properties)
     }
 
-    private func property() throws -> Nodes.Property {
+    private func property() throws -> NonTerminalSymbols.Property {
         let identifier = try propertyIdentifier()
         index += 1
 
-        var values: [Nodes.PropValue] = []
+        var values: [NonTerminalSymbols.PropValue] = []
         while index < tokens.count {
             let previousIndex = index
             guard let value = try? propertyValue() else {
@@ -77,28 +76,28 @@ public final class Parser {
             }
             values += [value]
         }
-        return Nodes.Property(identifier: identifier, values: values)
+        return NonTerminalSymbols.Property(identifier: identifier, values: values)
     }
 
-    private func propertyIdentifier() throws -> Nodes.PropIdent {
+    private func propertyIdentifier() throws -> NonTerminalSymbols.PropIdent {
         guard case .identifier(let letters) = currentToken.kind
         else {
             throw ParserError.unexpectedToken(expectedToken: .identifier, at: currentToken.position)
         }
 
-        return Nodes.PropIdent(letters: letters)
+        return NonTerminalSymbols.PropIdent(letters: letters)
     }
 
-    private func propertyValue() throws -> Nodes.PropValue {
+    private func propertyValue() throws -> NonTerminalSymbols.PropValue {
         try precondition(expected: .leftBracket)
         index += 1
         let value = try cValeType()
         try precondition(expected: .rightBracket)
         index += 1
-        return Nodes.PropValue(type: value)
+        return NonTerminalSymbols.PropValue(type: value)
     }
 
-    private func cValeType() throws -> Nodes.CValueType {
+    private func cValeType() throws -> NonTerminalSymbols.CValueType {
         let first = try value()
         if currentToken.kind == .colon {
             index += 1
@@ -109,12 +108,12 @@ public final class Parser {
         }
     }
 
-    private func value() throws -> Nodes.ValueType? {
+    private func value() throws -> NonTerminalSymbols.ValueType? {
         guard case .value(let value) = currentToken.kind else {
             return nil
         }
         index += 1
-        return Nodes.ValueType(value)
+        return NonTerminalSymbols.ValueType(value)
     }
 }
 
@@ -130,7 +129,7 @@ extension Parser {
 }
 
 extension Parser {
-    public static func parse(input: String) throws -> Nodes.Collection {
+    public static func parse(input: String) throws -> NonTerminalSymbols.Collection {
         let lexer = Lexer(input: input)
         let tokens = try lexer.lex()
         let parser = Parser(tokens: tokens)
