@@ -1,7 +1,7 @@
 public final class Node<Game: SGFKit.Game> {
     public let id: Int
     public weak var parent: Node<Game>?
-    private var properties: [Property]
+    private(set) var properties: [Property]
     public var children: [Node<Game>] = []
 
     init(id: Int, properties: [Property]) {

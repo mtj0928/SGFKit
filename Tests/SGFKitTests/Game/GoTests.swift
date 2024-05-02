@@ -86,4 +86,10 @@ final class GoTests: XCTestCase {
         let node3 = node2.children[0] // B[c1])
         XCTAssertEqual(node3.propertyValue(of: .printMoveMode), 3)
     }
+
+    func testConvertToSGF() throws {
+        let input = "(;FF[4]C[root](;C[a];C[b](;C[c])(;C[d];C[e]))(;C[f](;C[g];C[h];C[i])(;C[j])))"
+        let go = try Go(input: input)
+        XCTAssertEqual(go.tree.convertToSGF(), input)
+    }
 }
