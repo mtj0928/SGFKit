@@ -29,15 +29,27 @@ public final class Node<Game: SGFKit.Game> {
 public struct Property: Hashable, Equatable, Sendable {
     public var identifier: String
     public var values: [Compose]
+
+    public init(identifier: String, values: [Compose]) {
+        self.identifier = identifier
+        self.values = values
+    }
 }
 
 public enum Compose: Hashable, Equatable, Sendable {
     case single(String?)
     case compose(String?, String?)
 
-    var first: String? {
+    public var first: String? {
         switch self {
         case .single(let string), .compose(let string, _): return string
+        }
+    }
+
+    public var second: String? {
+        switch self {
+        case .single: return nil
+        case .compose(_, let second): return second
         }
     }
 }
