@@ -31,6 +31,13 @@ public struct GoPoint: Point, Move, Stone, Hashable, Sendable {
         }
         self.init(column: column, row: row)
     }
+
+    public func convertToPrimitiveValue() -> String? {
+        guard let columnChar = numberToAlphabet(column),
+              let rowChat = numberToAlphabet(row)
+        else { return nil }
+        return "\(columnChar)\(rowChat)"
+    }
 }
 
 private func alphabetToNumber(_ char: Character) -> Int? {
@@ -40,6 +47,17 @@ private func alphabetToNumber(_ char: Character) -> Int? {
         return scalarValue - 96
     case 65...90: // 'A' to 'Z'
         return scalarValue - 38
+    default:
+        return nil
+    }
+}
+
+private func numberToAlphabet(_ num: Int) -> Character? {
+    switch num {
+    case 1...26:
+        return Character(UnicodeScalar(num + 96)!) // 'a' to 'z'
+    case 27...52:
+        return Character(UnicodeScalar(num + 38)!) // 'A' to 'Z'
     default:
         return nil
     }

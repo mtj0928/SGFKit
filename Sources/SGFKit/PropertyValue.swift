@@ -2,10 +2,12 @@
 
 public protocol PropertyValue {
     init?(_ property: Property)
+    func convertToComposes() -> [Compose]
 }
 
 public protocol PropertyListElementValue: PropertyValue {
     init?(_ compose: Compose)
+    func convertToCompose() -> Compose
 }
 
 extension PropertyListElementValue {
@@ -13,15 +15,25 @@ extension PropertyListElementValue {
         guard let first = property.values.first else { return nil }
         self.init(first)
     }
+
+    public func convertToComposes() -> [Compose] {
+        [convertToCompose()]
+    }
 }
 
 public protocol PropertyPrimitiveValue: PropertyListElementValue {
     init?(primitiveValue: String?)
+
+    func convertToPrimitiveValue() -> String?
 }
 
 extension PropertyPrimitiveValue {
     public init?(_ compose: Compose) {
         self.init(primitiveValue: compose.first)
+    }
+
+    public func convertToCompose() -> Compose {
+        .single(self.convertToPrimitiveValue())
     }
 }
 
@@ -38,6 +50,13 @@ public enum SGFUnion<First: PropertyValue, Second: PropertyValue>: PropertyValue
             self = .second(second)
         } else {
             return nil
+        }
+    }
+
+    public func convertToComposes() -> [Compose] {
+        switch self {
+        case .first(let first): return first.convertToComposes()
+        case .second(let second): return second.convertToComposes()
         }
     }
 }
@@ -57,6 +76,10 @@ public struct SGFList<Element: PropertyListElementValue>: PropertyValue {
 
         self.values = elements
     }
+
+    public func convertToComposes() -> [Compose] {
+        values.map { $0.convertToCompose() }
+    }
 }
 
 public struct SGFEList<Element: PropertyListElementValue>: PropertyValue {
@@ -69,6 +92,10 @@ public struct SGFEList<Element: PropertyListElementValue>: PropertyValue {
         }
 
         self.values = elements
+    }
+
+    public func convertToComposes() -> [Compose] {
+        values.map { $0.convertToCompose() }
     }
 }
 
@@ -89,6 +116,10 @@ public struct SGFCompose<First: PropertyPrimitiveValue, Second: PropertyPrimitiv
         self.first = first
         self.second = second
     }
+
+    public func convertToCompose() -> Compose {
+        .compose(first.convertToPrimitiveValue(), second.convertToPrimitiveValue())
+    }
 }
 
 // MARK: - Primitive Value
@@ -99,12 +130,20 @@ public enum SGFNone: PropertyPrimitiveValue, Hashable, Sendable {
     public init?(primitiveValue: String?) {
         self = .none
     }
+
+    public func convertToPrimitiveValue() -> String? {
+        nil
+    }
 }
 
 extension Int: PropertyPrimitiveValue {
     public init?(primitiveValue: String?) {
         guard let primitiveValue, let number = Int(primitiveValue) else { return nil }
         self = number
+    }
+
+    public func convertToPrimitiveValue() -> String? {
+        String(self)
     }
 }
 
@@ -113,12 +152,20 @@ extension Double: PropertyPrimitiveValue {
         guard let primitiveValue, let number = Double(primitiveValue) else { return nil }
         self = number
     }
+
+    public func convertToPrimitiveValue() -> String? {
+        String(self)
+    }
 }
 
 extension String: PropertyPrimitiveValue {
     public init?(primitiveValue: String?) {
         guard let primitiveValue else { return nil }
         self = primitiveValue
+    }
+
+    public func convertToPrimitiveValue() -> String? {
+        self
     }
 }
 
@@ -137,6 +184,10 @@ public enum SGFDouble: Int, Sendable, PropertyPrimitiveValue {
         else { return nil }
         self = value
     }
+
+    public func convertToPrimitiveValue() -> String? {
+        String(rawValue)
+    }
 }
 
 public enum SGFColor: String, Sendable, PropertyPrimitiveValue {
@@ -148,5 +199,9 @@ public enum SGFColor: String, Sendable, PropertyPrimitiveValue {
               let value = SGFColor(rawValue: primitiveValue)
         else { return nil }
         self = value
+    }
+
+    public func convertToPrimitiveValue() -> String? {
+        rawValue
     }
 }

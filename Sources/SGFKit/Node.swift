@@ -1,6 +1,6 @@
 public final class Node<Game: SGFKit.Game> {
     public let id: Int
-    public weak var parent: Node<Game>?
+    public internal(set) weak var parent: Node<Game>?
     private(set) var properties: [Property]
     public var children: [Node<Game>] = []
 
@@ -21,8 +21,23 @@ public final class Node<Game: SGFKit.Game> {
         return nil
     }
 
-    public func has(of definition: PropertyDefinition<Game, some PropertyValue>) -> Bool {
-        return properties.contains(where: { $0.identifier == definition.name })
+    public func has(_ definition: PropertyDefinition<Game, some PropertyValue>) -> Bool {
+        properties.contains(where: { $0.identifier == definition.name })
+    }
+
+    public func addProperty<Value: PropertyValue>(_ value: Value, to definition: PropertyDefinition<Game, Value>) {
+        if has(definition) {
+            properties = properties.map {
+                $0.identifier == definition.name ? Property(identifier: $0.identifier, values: value.convertToComposes()) : $0
+            }
+        }
+        else {
+            properties.append(Property(identifier: definition.name, values: value.convertToComposes()))
+        }
+    }
+
+    public func removeProperty<Value: PropertyValue>(of definition: PropertyDefinition<Game, Value>) {
+        properties = properties.filter { property in property.identifier != definition.name }
     }
 }
 

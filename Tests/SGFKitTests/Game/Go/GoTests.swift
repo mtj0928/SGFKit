@@ -25,11 +25,11 @@ final class GoTests: XCTestCase {
         
         let node1 = go.tree.nodes[0].children[0] // ;B[ab]DO[]
         XCTAssertEqual(node1.propertyValue(of: .doubtful), SGFNone.none)
-        XCTAssertTrue(node1.has(of: .doubtful))
+        XCTAssertTrue(node1.has(.doubtful))
 
         let node2 = node1.children[0] // ;B[ba]
         XCTAssertNil(node2.propertyValue(of: .doubtful))
-        XCTAssertFalse(node2.has(of: .doubtful))
+        XCTAssertFalse(node2.has(.doubtful))
     }
 
     func testComplexBranch()  throws {
