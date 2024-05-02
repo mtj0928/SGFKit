@@ -3,12 +3,12 @@ public protocol Game {
     associatedtype Point: SGFKit.Point
     associatedtype Stone: SGFKit.Stone
 
-    init(tree: TreeModels.Collection<Self>)
+    init(tree: Collection<Self>)
 }
 
 extension Game {
     public init(collection: NonTerminalSymbols.Collection) {
-        self.init(tree: TreeModels.simplify(collection: collection))
+        self.init(tree: Collection(collection))
     }
 
     public init(input: String) throws {

@@ -1,15 +1,15 @@
 // MARK: - Protocols
 
 public protocol PropertyValue {
-    init?(_ property: TreeModels.Property)
+    init?(_ property: Property)
 }
 
 public protocol PropertyListElementValue: PropertyValue {
-    init?(_ compose: TreeModels.Compose)
+    init?(_ compose: Compose)
 }
 
 extension PropertyListElementValue {
-    public init?(_ property: TreeModels.Property) {
+    public init?(_ property: Property) {
         guard let first = property.values.first else { return nil }
         self.init(first)
     }
@@ -20,7 +20,7 @@ public protocol PropertyPrimitiveValue: PropertyListElementValue {
 }
 
 extension PropertyPrimitiveValue {
-    public init?(_ compose: TreeModels.Compose) {
+    public init?(_ compose: Compose) {
         self.init(primitiveValue: compose.first)
     }
 }
@@ -31,7 +31,7 @@ public enum SGFUnion<First: PropertyValue, Second: PropertyValue>: PropertyValue
     case first(First)
     case second(Second)
 
-    public init?(_ property: TreeModels.Property) {
+    public init?(_ property: Property) {
         if let first = First(property) {
             self = .first(first)
         } else if let second = Second(property) {
@@ -47,7 +47,7 @@ public enum SGFUnion<First: PropertyValue, Second: PropertyValue>: PropertyValue
 public struct SGFList<Element: PropertyListElementValue>: PropertyValue {
     var values: [Element]
 
-    public init?(_ property: TreeModels.Property) {
+    public init?(_ property: Property) {
         if property.values.isEmpty { return nil }
 
         let elements = property.values.compactMap({ Element($0) })
@@ -62,7 +62,7 @@ public struct SGFList<Element: PropertyListElementValue>: PropertyValue {
 public struct SGFEList<Element: PropertyListElementValue>: PropertyValue {
     var values: [Element]
 
-    public init?(_ property: TreeModels.Property) {
+    public init?(_ property: Property) {
         let elements = property.values.compactMap({ Element($0) })
         if elements.count != property.values.count {
             return nil
@@ -78,7 +78,7 @@ public struct SGFCompose<First: PropertyPrimitiveValue, Second: PropertyPrimitiv
     let first: First
     let second: Second
 
-    public init?(_ compose: TreeModels.Compose) {
+    public init?(_ compose: Compose) {
         guard case .compose(let first, let second) = compose,
               let first = First(primitiveValue: first),
               let second = Second(primitiveValue: second)

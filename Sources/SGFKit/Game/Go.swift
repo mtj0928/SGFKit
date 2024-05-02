@@ -3,9 +3,9 @@ public struct Go: Game {
     public typealias Move = GoPoint
     public typealias Stone = GoPoint
 
-    let tree: TreeModels.Collection<Self>
+    let tree: Collection<Self>
 
-    public init(tree: TreeModels.Collection<Self>) {
+    public init(tree: Collection<Self>) {
         self.tree = tree
     }
 }
