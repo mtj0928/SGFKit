@@ -16,7 +16,7 @@ public enum TreeModels {
             return Value(property)
         }
 
-        public func has<Value: PropertyValue>(of definition: PropertyDefinition<Game, Value>) -> Bool {
+        public func has(of definition: PropertyDefinition<Game, some PropertyValue>) -> Bool {
             return properties.contains(where: { $0.identifier == definition.name })
         }
     }
