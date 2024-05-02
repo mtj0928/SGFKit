@@ -1,6 +1,6 @@
 # SGFKit
-A library for operating [SGF FF[4]](https://www.red-bean.com/sgf/index.html) file in Swift.
-You can manipulate SGF in type-safe manner.
+A library for operating a [SGF FF[4]](https://www.red-bean.com/sgf/index.html) file in Swift.
+You can manipulate a SGF in a type-safe manner.
 
 ## Usage
 
@@ -29,4 +29,22 @@ let firstProperty = firstNode.properties[0] // FF[4]
 
 print(firstProperty.identifier.letters) // "FF"
 print(firstProperty.values[0].type.first.value ?? "none") // "4"
+```
+
+### Update a property
+You can update a property value and remove a property from a node.
+
+> [!NOTE]
+> A node is a reference type due to a tree structure.
+
+```swift
+let go = try Go(input: "(;FF[4];B[ab]C[a];B[ba])")
+let rootNode = go.tree.nodes[0]
+let node = rootNode.children[0] // ;B[ab]C[a]
+
+let point = GoPoint(column: 4, row: 3)
+node.addProperty(point, to: .black) // dc
+node.removeProperty(of: .comment)
+
+print(go.tree.convertToSGF()) // "(;FF[4];B[dc];B[ba])"
 ```

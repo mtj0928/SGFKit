@@ -8,7 +8,7 @@ public struct Collection<Game: SGFKit.Game>  {
     public init(_ collection: NonTerminalSymbols.Collection) {
         let idPublisher = IDPublisher()
         // SGF can have multiple root nodes.
-        let nodes: [Node<Game>]  = collection.gameTrees
+        let nodes: [Node<Game>] = collection.gameTrees
             .compactMap { Self.rootNode(gameTree: $0, idPublisher: idPublisher) }
         self.init(nodes: nodes)
     }
@@ -17,7 +17,6 @@ public struct Collection<Game: SGFKit.Game>  {
 // MARK: - Make
 
 extension Collection {
-
     private static func rootNode(gameTree: NonTerminalSymbols.GameTree, idPublisher: IDPublisher) -> Node<Game>? {
         let nodes: [Node<Game>] = gameTree.sequence.nodes.map { node(node: $0, idPublisher: idPublisher) }
         for index in nodes.indices {
