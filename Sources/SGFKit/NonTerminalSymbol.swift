@@ -148,13 +148,3 @@ public enum NonTerminalSymbols {
         }
     }
 }
-
-public enum SGFDouble: Int, Sendable {
-    case normal = 1
-    case emphasized = 2
-}
-
-public enum SGFColor: String, Sendable {
-    case black = "B"
-    case white = "W"
-}
