@@ -27,7 +27,7 @@ final class GoTests: XCTestCase {
         XCTAssertFalse(node2.has(of: .doubtful))
     }
 
-    func test2()  throws {
+    func testCompleBranch()  throws {
         let input = "(;FF[4]C[root](;C[a];C[b](;C[c])(;C[d];C[e]))(;C[f](;C[g];C[h];C[i])(;C[j])))"
         let go = try Go(input: input)
         let tree = go.tree
@@ -68,6 +68,17 @@ final class GoTests: XCTestCase {
         XCTAssertEqual(nodeE.children.count, 0)
         XCTAssertEqual(nodeE.id, 5)
         XCTAssertEqual(nodeE.parent?.id, nodeD.id)
+    }
 
+    func testInherit() throws {
+        let go = try Go(input: "(;FF[4](;B[ab];B[ba]PM[3];B[c1]))")
+        let node1 = go.tree.nodes[0].children[0] // ;B[ab]
+        XCTAssertNil(node1.propertyValue(of: .printMoveMode))
+
+        let node2 = node1.children[0] // ;B[ba]PM[3]
+        XCTAssertEqual(node2.propertyValue(of: .printMoveMode), 3)
+
+        let node3 = node2.children[0] // B[c1])
+        XCTAssertEqual(node3.propertyValue(of: .printMoveMode), 3)
     }
 }

@@ -1,12 +1,15 @@
 public struct PropertyDefinition<Game: SGFKit.Game, Value: PropertyValue>: ExpressibleByStringLiteral {
     let name: String
+    let inherit: Bool
 
-    public init(name: String, as: Value.Type = Value.self) {
+    public init(name: String, inherit: Bool, as: Value.Type = Value.self) {
         self.name = name
+        self.inherit = inherit
     }
 
     public init(stringLiteral value: StringLiteralType) {
         self.name = value
+        self.inherit = false
     }
 }
 
@@ -53,7 +56,7 @@ extension PropertyDefinition {
     public static var arrow: Property<List<Compose<Point, Point>>> { "AR" }
     public static var comment: Property<Text> { "C" }
     public static var circle: Property<List<Point>> { "CR" }
-    public static var dimPoints: Property<EList<Point>> { "DD" }
+    public static var dimPoints: Property<EList<Point>> { Property(name: "DD", inherit: true) }
     public static var eventPosition: Property<Double> { "DM" }
     public static var figure: Property<Union<None, Compose<Number, SimpleText>>> { "FG" }
     public static var goodForBlack: Property<Double> { "GB" }
@@ -63,13 +66,13 @@ extension PropertyDefinition {
     public static var line: Property<List<Compose<Point, Point>>> { "LN" }
     public static var mark: Property<List<Point>> { "MA" }
     public static var nodename: Property<SimpleText> { "N" }
-    public static var printMoveMode: Property<Number> { "PM" }
+    public static var printMoveMode: Property<Number> { Property(name: "PM", inherit: true) }
     public static var selected: Property<List<Point>> { "SL" }
     public static var square: Property<List<Point>> { "SQ" }
     public static var triangle: Property<List<Point>> { "TR" }
     public static var unclearPos: Property<Double> { "UC" }
     public static var value: Property<Real> { "V" }
-    public static var view: Property<EList<Point>> { "VW" }
+    public static var view: Property<EList<Point>> { Property(name: "VM", inherit: true) }
 
     // MARK: - root
     public static var application: Property<Compose<SimpleText, Number>> { "AP" }

@@ -22,15 +22,15 @@ public final class Parser {
 
     private func gameTree() throws -> NonTerminalSymbols.GameTree {
         try precondition(expected: .leftParenthesis)
-        index += 1
+        try incrementIndex()
 
         let sequence = try sequence()
         var gameTrees: [NonTerminalSymbols.GameTree] = []
-        while currentToken.kind != .rightParenthesis {
+        while try currentToken().kind != .rightParenthesis {
             gameTrees += try [gameTree()]
         }
 
-        index += 1
+        try incrementIndex()
         return NonTerminalSymbols.GameTree(sequence: sequence, gameTrees: gameTrees)
     }
 
@@ -50,7 +50,7 @@ public final class Parser {
 
     private func node() throws -> NonTerminalSymbols.Node {
         try precondition(expected: .semicolon)
-        index += 1
+        try incrementIndex()
         var properties: [NonTerminalSymbols.Property] = []
         while index < tokens.count {
             let previousIndex = index
@@ -65,7 +65,7 @@ public final class Parser {
 
     private func property() throws -> NonTerminalSymbols.Property {
         let identifier = try propertyIdentifier()
-        index += 1
+        try incrementIndex()
 
         var values: [NonTerminalSymbols.PropValue] = []
         while index < tokens.count {
@@ -80,9 +80,9 @@ public final class Parser {
     }
 
     private func propertyIdentifier() throws -> NonTerminalSymbols.PropIdent {
-        guard case .identifier(let letters) = currentToken.kind
+        guard case .identifier(let letters) = try currentToken().kind
         else {
-            throw ParserError.unexpectedToken(expectedToken: .identifier, at: currentToken.position)
+            throw ParserError.unexpectedToken(expectedToken: .identifier, at: try currentToken().position)
         }
 
         return NonTerminalSymbols.PropIdent(letters: letters)
@@ -90,17 +90,17 @@ public final class Parser {
 
     private func propertyValue() throws -> NonTerminalSymbols.PropValue {
         try precondition(expected: .leftBracket)
-        index += 1
+        try incrementIndex()
         let value = try cValeType()
         try precondition(expected: .rightBracket)
-        index += 1
+        try incrementIndex()
         return NonTerminalSymbols.PropValue(type: value)
     }
 
     private func cValeType() throws -> NonTerminalSymbols.CValueType {
         let first = try value()
-        if currentToken.kind == .colon {
-            index += 1
+        if try currentToken().kind == .colon {
+            try incrementIndex()
             let second = try value()
             return .compose(first, second)
         } else {
@@ -109,22 +109,33 @@ public final class Parser {
     }
 
     private func value() throws -> NonTerminalSymbols.ValueType? {
-        guard case .value(let value) = currentToken.kind else {
+        guard case .value(let value) = try currentToken().kind else {
             return nil
         }
-        index += 1
+        try incrementIndex()
         return NonTerminalSymbols.ValueType(value)
     }
 }
 
 extension Parser {
     private func precondition(expected: TokenKind.Case) throws {
-        if currentToken.kind.case == expected { return }
-        throw ParserError.unexpectedToken(expectedToken: expected, at: currentToken.position)
+        let token = try currentToken()
+        if token.kind.case == expected { return }
+        throw ParserError.unexpectedToken(expectedToken: expected, at: token.position)
     }
 
-    private var currentToken: Token {
-        tokens[index]
+    private func currentToken() throws -> Token {
+        if tokens.count <= index {
+            throw ParserError.indexOverflow
+        }
+        return tokens[index]
+    }
+
+    private func incrementIndex() throws {
+        index += 1
+        if tokens.count < index {
+            throw ParserError.indexOverflow
+        }
     }
 }
 
@@ -139,4 +150,5 @@ extension Parser {
 
 public enum ParserError: Error {
     case unexpectedToken(expectedToken: TokenKind.Case, at: String.Index)
+    case indexOverflow
 }

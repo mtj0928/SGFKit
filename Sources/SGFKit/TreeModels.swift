@@ -19,8 +19,15 @@ public enum TreeModels {
         }
 
         public func propertyValue<Value: PropertyValue>(of definition: PropertyDefinition<Game, Value>) -> Value? {
-            guard let property = properties.first(where: { $0.identifier == definition.name }) else { return nil }
-            return Value(property)
+            if let property = properties.first(where: { $0.identifier == definition.name }) {
+                return Value(property)
+            }
+
+            if definition.inherit {
+                return parent?.propertyValue(of: definition)
+            }
+
+            return nil
         }
 
         public func has(of definition: PropertyDefinition<Game, some PropertyValue>) -> Bool {
