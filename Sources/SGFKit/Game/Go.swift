@@ -44,3 +44,15 @@ private func alphabetToNumber(_ char: Character) -> Int? {
         return nil
     }
 }
+
+// MARK: - Custom Properties
+
+extension PropertyDefinition where Game == Go {
+    // None
+    public static var territoryBlack: Property<EList<Point>> { "TB" }
+    public static var territoryWhite: Property<EList<Point>> { "TW" }
+
+    // game-info
+    public static var handicap: Property<Number> { "HA" }
+    public static var komi: Property<Real> { "KM" }
+}

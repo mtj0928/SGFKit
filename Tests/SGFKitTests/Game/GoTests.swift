@@ -15,6 +15,11 @@ final class GoTests: XCTestCase {
         XCTAssertEqual(result2, GoPoint(column: 2, row: 1))
     }
 
+    func testGoSpecificProperty() throws {
+        let go = try Go(input: "(;FF[4]KM[6.5](;B[ab];B[ba]))")
+        XCTAssertEqual(go.tree.nodes[0].propertyValue(of: .komi), 6.5)
+    }
+
     func testNoneProperty()  throws {
         let go = try Go(input: "(;FF[4](;B[ab]DO[];B[ba]))")
         
