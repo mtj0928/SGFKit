@@ -25,7 +25,7 @@ public final class Collection<Game: SGFKit.Game>  {
 
     public func copy() -> Collection<Game> {
         let collection = Collection<Game>(nodes: [])
-        let nods = nodes.map { $0.copy() }
+        let nodes = nodes.map { $0.copy() }
         collection.nodes = nodes
         return collection
     }
