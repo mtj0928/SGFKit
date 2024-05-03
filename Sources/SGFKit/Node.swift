@@ -64,6 +64,19 @@ public final class Node<Game: SGFKit.Game>: NodeDelegate {
     public func node(treeStructureDidUpdated index: Int?) {
         parent?.node(treeStructureDidUpdated: index)
     }
+
+    public func copy() -> Node<Game> {
+        let properties = self.properties
+
+        let node = Node<Game>(properties: properties)
+
+        let children = self.children.map { $0.copy() }
+        children.forEach { child in
+            child.parent = node
+        }
+        node.children = children
+        return node
+    }
 }
 
 public struct Property: Hashable, Equatable, Sendable {

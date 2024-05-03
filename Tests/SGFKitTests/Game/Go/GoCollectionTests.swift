@@ -52,4 +52,24 @@ final class GoCollectionTests: XCTestCase {
         XCTAssertEqual(go.tree.convertToSGF(), "(;FF[4];B[ab])")
         XCTAssertNil(childNode)
     }
+
+    func testCopyNode() throws {
+        let go = try Go(input: "(;FF[4];B[ab];B[ba])")
+        let rootNode = go.tree.nodes[0]
+        let node = rootNode.children[0] // ;B[ab]
+
+        let copiedNode = node.copy()
+        XCTAssertTrue(copiedNode !== node)
+        XCTAssertEqual(copiedNode.propertyValue(of: .black), GoPoint(column: 1, row: 2))
+        XCTAssertEqual(copiedNode.children[0].propertyValue(of: .black), GoPoint(column: 2, row: 1))
+    }
+
+    func testCopyCollection() throws {
+        let go = try Go(input: "(;FF[4];B[ab];B[ba])")
+        let collection = go.tree
+        let copiedCollection = collection.copy()
+
+        XCTAssertTrue(copiedCollection !== collection)
+        XCTAssertEqual(copiedCollection.convertToSGF(), "(;FF[4];B[ab];B[ba])")
+    }
 }
