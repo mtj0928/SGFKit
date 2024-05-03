@@ -1,6 +1,6 @@
 # ``SGFKit``
 
-A library which can manipulates SGF in Swift.
+A library which can manipulates a [SGF FF[4]](https://www.red-bean.com/sgf/index.html) file in Swift.
 
 ## Overview
 
