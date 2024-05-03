@@ -1,0 +1,37 @@
+name: DocC
+on:
+  push:
+    branches:
+      - main
+jobs:
+  DocC:
+    runs-on: macos-latest
+    steps:
+      - uses: swift-actions/setup-swift@v2
+        with:
+          swift-version: "5.10.0"
+      - uses: actions/checkout@v4
+      - name: Build DocC
+        run: |
+          swift package --allow-writing-to-directory ./docs generate-documentation \
+          --target SGFKit \
+          --disable-indexing \
+          --output-path ./docs \
+          --transform-for-static-hosting \
+          --hosting-base-path SGFKit
+      - uses: actions/upload-pages-artifact@v2
+        with:
+          path: docs
+  DeployDocC:
+    needs: DocC
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2
