@@ -1,7 +1,12 @@
+/// A collection of SGF nodes.
 public final class Collection<Game: SGFKit.Game>  {
-    // SGF can have multiple root nodes.
-    public var nodes: [Node<Game>] { didSet { refreshStructure() } }
 
+    /// Nodes in the first depth of the collection.
+    /// > Note: SGF can have multiple root nodes.
+    public var nodes: [Node<Game>] { didSet { refreshStructure() } }
+    
+    /// Makes a collection.
+    /// - Parameter nodes: Nodes in the first depth of the collection.
     public init(nodes: [Node<Game>]) {
         self.nodes = nodes
         refreshStructure()
@@ -22,7 +27,8 @@ public final class Collection<Game: SGFKit.Game>  {
             refreshNumber(of: child, numberPublisher: numberPublisher)
         }
     }
-
+    
+    /// Makes the copy of the collection.
     public func copy() -> Collection<Game> {
         let collection = Collection<Game>(nodes: [])
         let nodes = nodes.map { $0.copy() }
@@ -32,15 +38,15 @@ public final class Collection<Game: SGFKit.Game>  {
 }
 
 extension Collection: NodeDelegate {
-    public var number: Int? {
+    var number: Int? {
         -1
     }
 
-    public func propertyValue<Value: PropertyValue>(of definition: PropertyDefinition<Game, Value>) -> Value? {
+    func propertyValue<Value: PropertyValue>(of definition: PropertyDefinition<Game, Value>) -> Value? {
         nil
     }
 
-    public func node(treeStructureDidUpdated number: Int?) {
+    func node(treeStructureDidUpdated number: Int?) {
         refreshStructure()
     }
 }

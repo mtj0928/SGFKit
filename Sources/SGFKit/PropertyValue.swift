@@ -1,18 +1,24 @@
 // MARK: - Protocols
 
-public protocol PropertyValue {
-    init?(_ property: Property)
+/// A protocol which can be a value of a node property.
+public protocol PropertyValue: Hashable, Sendable {
+    init?(_ composes: [Compose])
+
+    /// Converts the node to an array of a ``Compose`` .
     func convertToComposes() -> [Compose]
 }
 
+/// A protocol which can be an element of a list.
 public protocol PropertyListElementValue: PropertyValue {
     init?(_ compose: Compose)
+
+    /// Converts the node to an ``Compose``.
     func convertToCompose() -> Compose
 }
 
 extension PropertyListElementValue {
-    public init?(_ property: Property) {
-        guard let first = property.values.first else { return nil }
+    public init?(_ composes: [Compose]) {
+        guard let first = composes.first else { return nil }
         self.init(first)
     }
 
@@ -21,9 +27,11 @@ extension PropertyListElementValue {
     }
 }
 
+/// A protocol which can be a primitive value.
 public protocol PropertyPrimitiveValue: PropertyListElementValue {
     init?(primitiveValue: String?)
 
+    /// Converts the node to a primitive value.
     func convertToPrimitiveValue() -> String?
 }
 
@@ -39,14 +47,15 @@ extension PropertyPrimitiveValue {
 
 // MARK: - Union
 
+/// A data structure indicating a union type.
 public enum SGFUnion<First: PropertyValue, Second: PropertyValue>: PropertyValue {
     case first(First)
     case second(Second)
 
-    public init?(_ property: Property) {
-        if let first = First(property) {
+    public init?(_ composes: [Compose]) {
+        if let first = First(composes) {
             self = .first(first)
-        } else if let second = Second(property) {
+        } else if let second = Second(composes) {
             self = .second(second)
         } else {
             return nil
@@ -63,14 +72,17 @@ public enum SGFUnion<First: PropertyValue, Second: PropertyValue>: PropertyValue
 
 // MARK: - List
 
+/// A data structure indicating a list type for SGF.
+///
+/// > Note: List in SGF doesn't allow empty elements.
 public struct SGFList<Element: PropertyListElementValue>: PropertyValue {
-    var values: [Element]
+    public var values: [Element]
 
-    public init?(_ property: Property) {
-        if property.values.isEmpty { return nil }
+    public init?(_ composes: [Compose]) {
+        if composes.isEmpty { return nil }
 
-        let elements = property.values.compactMap({ Element($0) })
-        if elements.count != property.values.count {
+        let elements = composes.compactMap({ Element($0) })
+        if elements.count != composes.count {
             return nil
         }
 
@@ -82,12 +94,14 @@ public struct SGFList<Element: PropertyListElementValue>: PropertyValue {
     }
 }
 
+/// A data structure indicating an elist type for SGF.
+/// This type can have an empty element.
 public struct SGFEList<Element: PropertyListElementValue>: PropertyValue {
-    var values: [Element]
+    public var values: [Element]
 
-    public init?(_ property: Property) {
-        let elements = property.values.compactMap({ Element($0) })
-        if elements.count != property.values.count {
+    public init?(_ composes: [Compose]) {
+        let elements = composes.compactMap({ Element($0) })
+        if elements.count != composes.count {
             return nil
         }
 
@@ -101,9 +115,10 @@ public struct SGFEList<Element: PropertyListElementValue>: PropertyValue {
 
 // MARK: - Compose
 
+/// A data structure indicating a compose  type for SGF.
 public struct SGFCompose<First: PropertyPrimitiveValue, Second: PropertyPrimitiveValue>: PropertyListElementValue {
-    let first: First
-    let second: Second
+    public var first: First
+    public var second: Second
 
     public init?(_ compose: Compose) {
         guard case .compose(let first, let second) = compose,
@@ -124,6 +139,7 @@ public struct SGFCompose<First: PropertyPrimitiveValue, Second: PropertyPrimitiv
 
 // MARK: - Primitive Value
 
+/// A data structure indicating none type for SGF.
 public enum SGFNone: PropertyPrimitiveValue, Hashable, Sendable {
     case none
 
@@ -169,10 +185,18 @@ extension String: PropertyPrimitiveValue {
     }
 }
 
+/// A typealias  indicating Real type for SGF.
 public typealias SGFReal = Double
+
+/// A typealias  indicating Text type for SGF.
 public typealias SGFText = String
+
+/// A typealias  indicating Simple text type for SGF.
 public typealias SGFSimpleText = String
 
+/// An enum  indicating Double type for SGF.
+///
+/// > Note: Double in SGF is not the same Double in Swift.
 public enum SGFDouble: Int, Sendable, PropertyPrimitiveValue {
     case normal = 1
     case emphasized = 2
@@ -190,6 +214,7 @@ public enum SGFDouble: Int, Sendable, PropertyPrimitiveValue {
     }
 }
 
+/// An enum  indicating Color type for SGF.
 public enum SGFColor: String, Sendable, PropertyPrimitiveValue {
     case black = "B"
     case white = "W"

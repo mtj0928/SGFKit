@@ -1,15 +1,18 @@
+/// A data structure indicating Go game which has the SGF.
 public struct Go: Game {
     public typealias Point = GoPoint
     public typealias Move = GoPoint
     public typealias Stone = GoPoint
 
-    let tree: Collection<Self>
+    /// A tree of the game.
+    public let tree: Collection<Self>
 
     public init(tree: Collection<Self>) {
         self.tree = tree
     }
 }
 
+/// A data structure indicating a point for Go.
 public struct GoPoint: Point, Move, Stone, Hashable, Sendable {
     public var column: Int
     public var row: Int

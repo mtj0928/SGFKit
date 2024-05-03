@@ -1,3 +1,22 @@
+/// A definition of a node property.
+///
+/// By defining a static value of this class, a value can be read and written in a type-safe manner.
+/// ```swift
+/// extension PropertyDefinition {
+///     static var  black: Property<Move> { Property(name: "B", inherit: false) }
+/// }
+///
+/// let node: Node<Go> = ...
+/// let move: Go.Move = node.propertyValue(of: .black)
+/// ```
+///
+/// Because this struct conforms to `ExpressibleByStringLiteral`, the node can be defined with a string literal.
+/// In this case, `inherit` is `false`.
+/// ```swift
+/// extension PropertyDefinition {
+///     static var  black: Property<Move> { "B" }
+/// }
+/// ```
 public struct PropertyDefinition<Game: SGFKit.Game, Value: PropertyValue>: ExpressibleByStringLiteral {
     let name: String
     let inherit: Bool
@@ -31,6 +50,8 @@ extension PropertyDefinition {
     public typealias EList = SGFEList
     public typealias Compose = SGFCompose
     public typealias Union = SGFUnion
+
+    // TODO: Add documents to all definitions.
 
     // MARK: - move
     public static var black: Property<Move> { "B" }

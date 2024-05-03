@@ -1,8 +1,11 @@
 extension Collection {
+    
+    /// Converts the collection to a SGF text.
     func convertToSGF() -> String {
         convertToNonTerminalSymbol().convertToSGF()
     }
-
+    
+    /// Converts the collection to non terminal symbols.
     func convertToNonTerminalSymbol() -> NonTerminalSymbols.Collection {
         let gameTrees = nodes.map { gameTree(from: $0) }
         return NonTerminalSymbols.Collection(gameTrees: gameTrees)

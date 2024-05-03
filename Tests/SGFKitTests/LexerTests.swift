@@ -10,7 +10,7 @@ final class LexerTests: XCTestCase {
         (;C[f](;C[g];C[h];C[i])
         (;C[j])))
         """
-        let tokens = try Lexer(input: input).lex()
+        let tokens = try Lexer(input: input).tokenize()
         let kinds = tokens.map { $0.kind }
         XCTAssertEqual(kinds, [
             .leftParenthesis,   // (

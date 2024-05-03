@@ -1,5 +1,9 @@
+/// A data structure indicating a token of SGF.
 public struct Token: Equatable, Hashable, Sendable {
+    /// A position of the token in the original text.
     public var position: String.Index
+
+    /// A kind of the token.
     public var kind: TokenKind
 
     init(_ kind: TokenKind, at position: String.Index) {
@@ -8,6 +12,7 @@ public struct Token: Equatable, Hashable, Sendable {
     }
 }
 
+/// An enum  indicating a kind and a value of a token of SGF.
 public enum TokenKind: Equatable, Hashable, Sendable {
     /// A token indicating "(".
     case leftParenthesis
@@ -33,6 +38,7 @@ public enum TokenKind: Equatable, Hashable, Sendable {
     /// A token indicating value.
     case value(String)
 
+    /// An enum  indicating only a kind of a token of SGF.
     public enum Case {
         /// A token indicating "(".
         case leftParenthesis
@@ -52,7 +58,8 @@ public enum TokenKind: Equatable, Hashable, Sendable {
         case value
     }
 
-    var `case`: Case {
+    /// A values indicating only a kind of the token.
+    public var `case`: Case {
         switch self {
         case .leftParenthesis: .leftParenthesis
         case .rightParenthesis: .rightParenthesis

@@ -1,11 +1,9 @@
-public protocol NonTerminalSymbol: Hashable, Sendable {
-    /// Converts the symbols to a string in SGF.
-    func convertToSGF() -> String
-}
-
 /// A namespace for non terminal symbol of EBNF which is defined in [the official documents](https://www.red-bean.com/sgf/sgf4.html).
+///
+/// - SeeAlso: [the official documents](https://www.red-bean.com/sgf/sgf4.html)
 public enum NonTerminalSymbols {
-    public struct Collection: NonTerminalSymbol {
+
+    public struct Collection: Hashable, Sendable {
         public var gameTrees: [GameTree]
 
         public init(gameTrees: [GameTree]) {
@@ -18,7 +16,7 @@ public enum NonTerminalSymbols {
         }
     }
 
-    public struct GameTree: NonTerminalSymbol {
+    public struct GameTree: Hashable, Sendable {
         public var sequence: Sequence
         public var gameTrees: [GameTree]
 
@@ -33,7 +31,7 @@ public enum NonTerminalSymbols {
         }
     }
 
-    public struct Sequence: NonTerminalSymbol {
+    public struct Sequence: Hashable, Sendable {
         public var nodes: [Node]
 
         public init(nodes: [Node]) {
@@ -46,7 +44,7 @@ public enum NonTerminalSymbols {
         }
     }
 
-    public struct Node: NonTerminalSymbol{
+    public struct Node: Hashable, Sendable{
         public var properties: [Property]
 
         public init(properties: [Property]) {
@@ -59,7 +57,7 @@ public enum NonTerminalSymbols {
         }
     }
 
-    public struct Property: NonTerminalSymbol {
+    public struct Property: Hashable, Sendable {
         public var identifier: PropIdent
         public var values: [PropValue]
 
@@ -74,7 +72,7 @@ public enum NonTerminalSymbols {
         }
     }
 
-    public struct PropIdent: NonTerminalSymbol, ExpressibleByStringLiteral {
+    public struct PropIdent: Hashable, Sendable, ExpressibleByStringLiteral {
         public var letters: String
 
         public init(letters: String) {
@@ -91,7 +89,7 @@ public enum NonTerminalSymbols {
         }
     }
 
-    public struct PropValue: NonTerminalSymbol {
+    public struct PropValue: Hashable, Sendable {
         public var type: CValueType
 
         public init(type: CValueType) {
@@ -104,7 +102,7 @@ public enum NonTerminalSymbols {
         }
     }
 
-    public enum CValueType: NonTerminalSymbol {
+    public enum CValueType: Hashable, Sendable {
         case single(ValueType?)
         case compose(ValueType?, ValueType?)
 
@@ -131,7 +129,7 @@ public enum NonTerminalSymbols {
         }
     }
 
-    public struct ValueType: NonTerminalSymbol, ExpressibleByStringLiteral {
+    public struct ValueType: Hashable, Sendable, ExpressibleByStringLiteral {
         public var value: String
 
         public init(_ value: String) {

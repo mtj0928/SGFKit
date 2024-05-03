@@ -1,12 +1,17 @@
+/// A parser for SGF.
 public final class Parser {
     private let tokens: [Token]
     private var index = 0
 
+    /// Creates an instance.
     public init(tokens: [Token]) {
         self.tokens = tokens
     }
 
-    public func perse() throws -> NonTerminalSymbols.Collection {
+    /// Parse the given tokens.
+    ///
+    /// ``ParserError`` is thrown on an error case.
+    public func parse() throws -> NonTerminalSymbols.Collection {
         index = 0
         let collection = try collection()
         return collection
@@ -140,15 +145,23 @@ extension Parser {
 }
 
 extension Parser {
+
+    /// Parse the given text as SGF.
+    ///
+    /// ``ParserError`` or ``LexerError`` are thrown on an error case.
     public static func parse(input: String) throws -> NonTerminalSymbols.Collection {
         let lexer = Lexer(input: input)
-        let tokens = try lexer.lex()
+        let tokens = try lexer.tokenize()
         let parser = Parser(tokens: tokens)
-        return try parser.perse()
+        return try parser.parse()
     }
 }
 
+/// An error for ``Parser``.
 public enum ParserError: Error {
+    /// A case indicating unexpected token appears.
     case unexpectedToken(expectedToken: TokenKind.Case, at: String.Index)
+
+    /// A case indicating the expected token doesn't appear.
     case indexOverflow
 }

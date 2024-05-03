@@ -1,13 +1,18 @@
+/// A lexer fot SGF.
 public final class Lexer {
     private let input: String
     private var index: String.Index
 
+    /// Creates an object.
     public init(input: String) {
         self.input = input
         self.index = input.startIndex
     }
 
-    public func lex() throws -> [Token] {
+    /// Tokenize the given input.
+    ///
+    /// This function throw ``LexerError`` on an error case.
+    public func tokenize() throws -> [Token] {
         var tokens = [Token]()
         while index < input.endIndex {
             let character = input[index]
@@ -75,6 +80,8 @@ public final class Lexer {
     }
 }
 
+/// An error for ``Lexer``.
 public enum LexerError: Error {
+    /// A case indicating there is invalid character.
     case invalidCharacter(index: String.Index)
 }

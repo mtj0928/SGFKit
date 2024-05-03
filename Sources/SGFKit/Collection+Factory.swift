@@ -1,4 +1,5 @@
 extension Collection {
+    /// Makes a collection.
     public convenience init(_ collection: NonTerminalSymbols.Collection) {
         let nodes: [Node<Game>] = collection.gameTrees.compactMap { Self.rootNode(gameTree: $0) }
         self.init(nodes: nodes)
