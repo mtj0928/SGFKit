@@ -26,4 +26,30 @@ final class GoCollectionTests: XCTestCase {
         XCTAssertFalse(node.has(.comment))
         XCTAssertEqual(go.tree.convertToSGF(), "(;FF[4];B[ab];B[ba])")
     }
+
+    func testAddNewNode() throws {
+        let go = try Go(input: "(;FF[4];B[ab];B[ba])")
+        let rootNode = go.tree.nodes[0]
+        let node = rootNode.children[0] // ;B[ab]
+        node.children.append(Node(properties: [Property(identifier: "B", values: [.single("cc")])]))
+
+        XCTAssertEqual(go.tree.nodes[0].number, 0)
+        XCTAssertEqual(go.tree.nodes[0].children[0].number, 1)
+        XCTAssertEqual(go.tree.nodes[0].children[0].children[0].number, 2)
+        XCTAssertEqual(go.tree.nodes[0].children[0].children[1].number, 3)
+        XCTAssertEqual(go.tree.convertToSGF(), "(;FF[4];B[ab](;B[ba])(;B[cc]))")
+    }
+
+    func testRemoveNode() throws {
+        let go = try Go(input: "(;FF[4];B[ab];B[ba])")
+        let rootNode = go.tree.nodes[0]
+        let node = rootNode.children[0] // ;B[ab]
+        weak var childNode = node.children.first // ;B[ba]
+        node.children.removeAll()
+
+        XCTAssertEqual(go.tree.nodes[0].number, 0)
+        XCTAssertEqual(go.tree.nodes[0].children[0].number, 1)
+        XCTAssertEqual(go.tree.convertToSGF(), "(;FF[4];B[ab])")
+        XCTAssertNil(childNode)
+    }
 }

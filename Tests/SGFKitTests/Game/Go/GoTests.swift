@@ -40,39 +40,39 @@ final class GoTests: XCTestCase {
         let rootNode = tree.nodes[0] // ";FF[4]C[root]"
         XCTAssertEqual(rootNode.propertyValue(of: .fileFormat), 4)
         XCTAssertEqual(rootNode.propertyValue(of: .comment), "root")
-        XCTAssertEqual(rootNode.id, 0)
+        XCTAssertEqual(rootNode.number, 0)
         XCTAssertEqual(rootNode.children.count, 2)
-        XCTAssertNil(rootNode.parent)
+        XCTAssertEqual(rootNode.parent?.number, tree.number)
 
         let nodeA = rootNode.children[0] // ;C[a]
         XCTAssertEqual(nodeA.propertyValue(of: .comment), "a")
         XCTAssertEqual(nodeA.children.count, 1)
-        XCTAssertEqual(nodeA.id, 1)
-        XCTAssertEqual(nodeA.parent?.id, rootNode.id)
+        XCTAssertEqual(nodeA.number, 1)
+        XCTAssertEqual(nodeA.parent?.number, rootNode.number)
 
         let nodeB = nodeA.children[0] // ;C[b]
         XCTAssertEqual(nodeB.propertyValue(of: .comment), "b")
         XCTAssertEqual(nodeB.children.count, 2)
-        XCTAssertEqual(nodeB.id, 2)
-        XCTAssertEqual(nodeB.parent?.id, nodeA.id)
+        XCTAssertEqual(nodeB.number, 2)
+        XCTAssertEqual(nodeB.parent?.number, nodeA.number)
 
         let nodeC = nodeB.children[0] // ;C[c]
         XCTAssertEqual(nodeC.propertyValue(of: .comment), "c")
         XCTAssertEqual(nodeC.children.count, 0)
-        XCTAssertEqual(nodeC.id, 3)
-        XCTAssertEqual(nodeC.parent?.id, nodeB.id)
+        XCTAssertEqual(nodeC.number, 3)
+        XCTAssertEqual(nodeC.parent?.number, nodeB.number)
 
         let nodeD = nodeB.children[1] // ;C[d]
         XCTAssertEqual(nodeD.propertyValue(of: .comment), "d")
         XCTAssertEqual(nodeD.children.count, 1)
-        XCTAssertEqual(nodeD.id, 4)
-        XCTAssertEqual(nodeD.parent?.id, nodeB.id)
+        XCTAssertEqual(nodeD.number, 4)
+        XCTAssertEqual(nodeD.parent?.number, nodeB.number)
 
         let nodeE = nodeD.children[0] // ;C[e]
         XCTAssertEqual(nodeE.propertyValue(of: .comment), "e")
         XCTAssertEqual(nodeE.children.count, 0)
-        XCTAssertEqual(nodeE.id, 5)
-        XCTAssertEqual(nodeE.parent?.id, nodeD.id)
+        XCTAssertEqual(nodeE.number, 5)
+        XCTAssertEqual(nodeE.parent?.number, nodeD.number)
     }
 
     func testInherit() throws {

@@ -1,11 +1,32 @@
-public final class Node<Game: SGFKit.Game> {
-    public let id: Int
-    public internal(set) weak var parent: Node<Game>?
-    private(set) var properties: [Property]
-    public var children: [Node<Game>] = []
+public protocol NodeDelegate<Game>: AnyObject {
+    associatedtype Game: SGFKit.Game
 
-    init(id: Int, properties: [Property]) {
-        self.id = id
+    /// A unique number for the node in the collection.
+    /// The numbering rule follows [the official documents rule](https://www.red-bean.com/sgf/sgf4.html#1)
+    /// When the number is not fixed, `nil` returns.
+    /// If the class is not ``Node`` like ``Collection``,  `-1` is returned.
+    var number: Int? { get }
+
+    func node(treeStructureDidUpdated: Int?)
+    func propertyValue<Value: PropertyValue>(of definition: PropertyDefinition<Game, Value>) -> Value?
+}
+
+public final class Node<Game: SGFKit.Game>: NodeDelegate {
+    public internal(set) var number: Int?
+    public internal(set) weak var parent: (any NodeDelegate<Game>)?
+
+    public var children: [Node<Game>] = [] {
+        didSet { parent?.node(treeStructureDidUpdated: number) }
+    }
+    private(set) var properties: [Property]
+
+    public init(properties: [Property]) {
+        self.number = nil
+        self.properties = properties
+    }
+
+    init(number: Int, properties: [Property]) {
+        self.number = number
         self.properties = properties
     }
 
@@ -38,6 +59,10 @@ public final class Node<Game: SGFKit.Game> {
 
     public func removeProperty<Value: PropertyValue>(of definition: PropertyDefinition<Game, Value>) {
         properties = properties.filter { property in property.identifier != definition.name }
+    }
+
+    public func node(treeStructureDidUpdated index: Int?) {
+        parent?.node(treeStructureDidUpdated: index)
     }
 }
 
