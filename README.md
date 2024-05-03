@@ -1,6 +1,14 @@
 # SGFKit
-A library for operating a [SGF FF[4]](https://www.red-bean.com/sgf/index.html) file in Swift.
+SGFKit is a library for operating a [SGF FF[4]](https://www.red-bean.com/sgf/index.html) file in Swift.
 You can manipulate a SGF in a type-safe manner.
+
+Please refer [documents](https://mtj0928.github.io/SGFKit/documentation/sgfkit).
+
+## Install
+SGFKit supports only Swift Package Manager.
+```swift
+.package(url: "https://github.com/mtj0928/SGFKit", .upToNextMinor(from: "0.4.0"))
+```
 
 ## Usage
 
