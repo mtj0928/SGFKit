@@ -1,5 +1,3 @@
-import Foundation
-
 public final class Lexer {
     private let input: String
     private var index: String.Index
