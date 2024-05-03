@@ -144,6 +144,7 @@ public enum SGFNone: PropertyPrimitiveValue, Hashable, Sendable {
     case none
 
     public init?(primitiveValue: String?) {
+        guard primitiveValue == "" else { return nil }
         self = .none
     }
 
