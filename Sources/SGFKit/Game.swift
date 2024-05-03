@@ -9,6 +9,9 @@ public protocol Game {
     /// A stone type in the game.
     associatedtype Stone: SGFKit.Stone
 
+    /// A tree of the game.
+    var tree: Collection<Self> { get }
+
     /// Creates an object.
     init(tree: Collection<Self>)
 }
