@@ -1,3 +1,5 @@
+import Foundation
+
 /// A namespace for non terminal symbol of EBNF which is defined in [the official documents](https://www.red-bean.com/sgf/sgf4.html).
 ///
 /// - SeeAlso: [the official documents](https://www.red-bean.com/sgf/sgf4.html)
@@ -142,7 +144,11 @@ public enum NonTerminalSymbols {
 
         /// Converts the symbols to a string in SGF.
         public func convertToSGF() -> String {
-            value
+            // "]", "\" and ":" need to be escaped with "¥".
+            return value
+                .replacingOccurrences(of: "]", with: "¥]")
+                .replacingOccurrences(of: "\\", with: "¥\\")
+                .replacingOccurrences(of: ":", with: "¥:")
         }
     }
 }

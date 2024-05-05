@@ -92,4 +92,10 @@ final class GoTests: XCTestCase {
         let go = try Go(input: input)
         XCTAssertEqual(go.tree.convertToSGF(), input)
     }
+
+    func testConvertToSGFWithEscaping() throws {
+        let input = "(;FF[4]C[¥]¥:¥\\foo])"
+        let go = try Go(input: input)
+        XCTAssertEqual(go.tree.convertToSGF(), input)
+    }
 }
