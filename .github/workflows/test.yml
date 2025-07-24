@@ -7,12 +7,17 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build:
+  test:
+    strategy:
+      matrix:
+        swift_version:
+          - "6.0"
+          - "6.1"
     runs-on: macos-latest
     steps:
-    - uses: swift-actions/setup-swift@v2
+    - uses: SwiftyLab/setup-swift@latest
       with:
-        swift-version: "5.10.0"
+        swift-version: ${{ matrix.swift_version }}
     - uses: actions/checkout@v4
     - name: Run tests
-      run: swift test -v
+      run: swift test
