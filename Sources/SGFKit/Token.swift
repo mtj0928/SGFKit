@@ -39,7 +39,7 @@ public enum TokenKind: Equatable, Hashable, Sendable {
     case value(String)
 
     /// An enum  indicating only a kind of a token of SGF.
-    public enum Case {
+    public enum Case: Sendable {
         /// A token indicating "(".
         case leftParenthesis
         /// A token indicating ")".

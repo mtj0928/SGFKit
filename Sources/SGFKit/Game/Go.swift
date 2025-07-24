@@ -37,9 +37,9 @@ public struct GoPoint: Point, Move, Stone, Hashable, Sendable {
 
     public func convertToPrimitiveValue() -> String? {
         guard let columnChar = numberToAlphabet(column),
-              let rowChat = numberToAlphabet(row)
+              let rowChar = numberToAlphabet(row)
         else { return nil }
-        return "\(columnChar)\(rowChat)"
+        return "\(columnChar)\(rowChar)"
     }
 }
 

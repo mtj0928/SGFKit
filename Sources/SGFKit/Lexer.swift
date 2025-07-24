@@ -1,3 +1,5 @@
+import Foundation
+
 /// A lexer fot SGF.
 public final class Lexer {
     private let input: String
@@ -81,7 +83,14 @@ public final class Lexer {
 }
 
 /// An error for ``Lexer``.
-public enum LexerError: Error {
+public enum LexerError: Error, LocalizedError {
     /// A case indicating there is invalid character.
     case invalidCharacter(index: String.Index)
+
+    public var errorDescription: String? {
+        switch self {
+        case .invalidCharacter(let index):
+            "Invalid character found at position \(index) while tokenizing SGF input"
+        }
+    }
 }

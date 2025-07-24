@@ -1,3 +1,5 @@
+import Foundation
+
 /// A parser for SGF.
 public final class Parser {
     private let tokens: [Token]
@@ -158,10 +160,19 @@ extension Parser {
 }
 
 /// An error for ``Parser``.
-public enum ParserError: Error {
+public enum ParserError: Error, LocalizedError {
     /// A case indicating unexpected token appears.
     case unexpectedToken(expectedToken: TokenKind.Case, at: String.Index)
 
     /// A case indicating the expected token doesn't appear.
     case indexOverflow
+
+    public var errorDescription: String? {
+        switch self {
+        case .unexpectedToken(let expectedToken, let position):
+            "Unexpected token at position \(position). Expected: \(expectedToken)"
+        case .indexOverflow:
+            "Unexpected end of input while parsing SGF"
+        }
+    }
 }
