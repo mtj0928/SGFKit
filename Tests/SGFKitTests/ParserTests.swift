@@ -82,7 +82,7 @@ final class GoParserTests: XCTestCase {
         XCTAssertEqual(collection, expected)
     }
 
-    func testconvertToSGF() throws {
+    func testConvertToSGF() throws {
         let input = """
         (;FF[4]C[root](;C[a];C[b](;C[c])
         (;C[d];C[e]))

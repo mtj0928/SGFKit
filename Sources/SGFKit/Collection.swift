@@ -1,5 +1,5 @@
 /// A collection of SGF nodes.
-public final class Collection<Game: SGFKit.Game>  {
+public final class Collection<Game: SGFKit.Game> {
 
     /// Nodes in the first depth of the collection.
     /// > Note: SGF can have multiple root nodes.

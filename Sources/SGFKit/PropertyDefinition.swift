@@ -17,7 +17,7 @@
 ///     static var  black: Property<Move> { "B" }
 /// }
 /// ```
-public struct PropertyDefinition<Game: SGFKit.Game, Value: PropertyValue>: ExpressibleByStringLiteral {
+public struct PropertyDefinition<Game: SGFKit.Game, Value: PropertyValue>: ExpressibleByStringLiteral, Sendable {
     let name: String
     let inherit: Bool
 
