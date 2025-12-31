@@ -37,7 +37,7 @@ public final class Node<Game: SGFKit.Game> {
     
     /// Makes the node.
     /// - Parameter properties: The property of the node.
-    public init(properties: [Property]) {
+    public init(properties: [Property] = []) {
         self.number = nil
         self.properties = properties
     }
