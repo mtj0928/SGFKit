@@ -1,4 +1,4 @@
-protocol NodeDelegate<Game>: AnyObject {
+protocol NodeProtocol<Game>: AnyObject {
     associatedtype Game: SGFKit.Game
 
     var number: Int? { get }
@@ -20,7 +20,7 @@ public final class Node<Game: SGFKit.Game> {
     /// The parent node of this node.
     public var parentNode: (Node<Game>)? { parent as? Node<Game> }
 
-    weak var parent: (any NodeDelegate<Game>)?
+    weak var parent: (any NodeProtocol<Game>)?
 
     /// The children of the node.
     ///
@@ -101,7 +101,7 @@ public final class Node<Game: SGFKit.Game> {
     }
 }
 
-extension Node: NodeDelegate {
+extension Node: NodeProtocol {
     func node(treeStructureDidUpdated index: Int?) {
         parent?.node(treeStructureDidUpdated: index)
     }
