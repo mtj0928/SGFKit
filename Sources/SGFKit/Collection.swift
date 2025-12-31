@@ -35,7 +35,7 @@ public final class Collection<Game: SGFKit.Game> {
     }
 }
 
-extension Collection: NodeDelegate {
+extension Collection: NodeProtocol {
     var number: Int? {
         -1
     }
