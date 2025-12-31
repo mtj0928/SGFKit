@@ -56,7 +56,7 @@ extension PropertyDefinition {
     // MARK: - move
     public static var black: Property<Move> { "B" }
     public static var blackTimeLeft: Property<Real> { "BL" }
-    public static var badMove: Property<Move> { "BM" }
+    public static var badMove: Property<Double> { "BM" }
     public static var doubtful: Property<None> { "DO" }
     public static var interesting: Property<None> { "IT" }
     public static var ko: Property<None> { "KO" }
