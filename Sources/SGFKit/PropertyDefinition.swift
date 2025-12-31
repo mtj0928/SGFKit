@@ -14,12 +14,12 @@
 /// In this case, `inherit` is `false`.
 /// ```swift
 /// extension PropertyDefinition {
-///     static var  black: Property<Move> { "B" }
+///     static var black: Property<Move> { "B" }
 /// }
 /// ```
 public struct PropertyDefinition<Game: SGFKit.Game, Value: PropertyValue>: ExpressibleByStringLiteral, Sendable {
-    let name: String
-    let inherit: Bool
+    public let name: String
+    public let inherit: Bool
 
     public init(name: String, inherit: Bool, as: Value.Type = Value.self) {
         self.name = name
