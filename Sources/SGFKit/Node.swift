@@ -124,6 +124,20 @@ public struct Property: Hashable, Equatable, Sendable {
         self.identifier = identifier
         self.values = values
     }
+
+    /// Creates a Property with type-safe property definition and value.
+    /// - Parameters:
+    ///   - definition: A property definition that specifies the property type.
+    ///   - value: The value conforming to the property definition's value type.
+    public init<Game: SGFKit.Game, Value: PropertyValue>(
+        _ definition: PropertyDefinition<Game, Value>,
+        value: Value
+    ) {
+        self.init(
+            identifier: definition.name,
+            values: value.convertToComposes()
+        )
+    }
 }
 
 /// An enum indicating a composed value of a node.
