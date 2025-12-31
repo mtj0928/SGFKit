@@ -1,9 +1,11 @@
 @testable import SGFKit
-import XCTest
+import Testing
 
-final class LexerTests: XCTestCase {
+@Suite
+struct LexerTests {
 
-    func testSimpleCase() throws {
+    @Test
+    func simpleCase() throws {
         let input = """
         (;FF[4]C[root](;C[a];C[b](;C[c])
         (;C[d];C[e]))
@@ -12,7 +14,7 @@ final class LexerTests: XCTestCase {
         """
         let tokens = try Lexer(input: input).tokenize()
         let kinds = tokens.map { $0.kind }
-        XCTAssertEqual(kinds, [
+        #expect(kinds == [
             .leftParenthesis,   // (
             .semicolon,         // ;
             .identifier("FF"),  // FF
