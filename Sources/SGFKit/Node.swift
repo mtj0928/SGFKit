@@ -1,4 +1,4 @@
-protocol NodeProtocol<Game>: AnyObject {
+protocol NodeProtocol<Game>: AnyObject, Equatable {
     associatedtype Game: SGFKit.Game
 
     var number: Int? { get }
@@ -9,6 +9,7 @@ protocol NodeProtocol<Game>: AnyObject {
 
 /// A node object for SGF.
 public final class Node<Game: SGFKit.Game> {
+    
     /// A unique number for the node in the collection.
     ///
     /// The numbering rule follows [the official documents rule](https://www.red-bean.com/sgf/sgf4.html#1)
@@ -104,6 +105,12 @@ public final class Node<Game: SGFKit.Game> {
 extension Node: NodeProtocol {
     func node(treeStructureDidUpdated index: Int?) {
         parent?.node(treeStructureDidUpdated: index)
+    }
+
+    public static func == (lhs: Node<Game>, rhs: Node<Game>) -> Bool {
+        lhs.number == rhs.number
+        && lhs.children == rhs.children
+        && lhs.properties == rhs.properties
     }
 }
 

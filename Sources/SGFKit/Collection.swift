@@ -47,6 +47,10 @@ extension Collection: NodeProtocol {
     func node(treeStructureDidUpdated number: Int?) {
         refreshStructure()
     }
+
+    public static func == (lhs: Collection<Game>, rhs: Collection<Game>) -> Bool {
+        lhs.nodes == rhs.nodes
+    }
 }
 
 private final class NumberPublisher {
