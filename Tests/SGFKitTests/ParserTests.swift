@@ -1,9 +1,11 @@
 @testable import SGFKit
-import XCTest
+import Testing
 
-final class GoParserTests: XCTestCase {
+@Suite
+struct GoParserTests {
 
-    func testParseForSimpleCase() throws {
+    @Test
+    func parseForSimpleCase() throws {
         let input = """
         (;FF[4]C[root](;C[a];C[b](;C[c])
         (;C[d];C[e]))
@@ -79,10 +81,11 @@ final class GoParserTests: XCTestCase {
                 )
             ]
         )
-        XCTAssertEqual(collection, expected)
+        #expect(collection == expected)
     }
 
-    func testConvertToSGF() throws {
+    @Test
+    func convertToSGF() throws {
         let input = """
         (;FF[4]C[root](;C[a];C[b](;C[c])
         (;C[d];C[e]))
@@ -91,9 +94,8 @@ final class GoParserTests: XCTestCase {
         """
         let collection = try Parser.parse(input: input)
 
-        XCTAssertEqual(
-            collection.convertToSGF(),
-            "(;FF[4]C[root](;C[a];C[b](;C[c])(;C[d];C[e]))(;C[f](;C[g];C[h];C[i])(;C[j])))"
+        #expect(
+            collection.convertToSGF() == "(;FF[4]C[root](;C[a];C[b](;C[c])(;C[d];C[e]))(;C[f](;C[g];C[h];C[i])(;C[j])))"
         )
     }
 }
